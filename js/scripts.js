@@ -140,7 +140,6 @@ function figure(){
                 //$(element).removeClass('bg-primary').addClass('bg-white');
                 //$(element).next().removeClass('bg-white').addClass('bg-primary');
                 $(domEle).before($(domEle).next());
-                //$(this).removeClass('order-1').addClass('order-2');
                 /*for (let index = 1; index < 12; index++) {
                     if ($(this).hasClass('order-' + index)){
                         let divBelow = $(this).parent.find('.order-' + (index + 1));
