@@ -129,50 +129,42 @@ function figure(){
     var list;
     return {
         create: () => {
+            //The position is chosen randomly
             let startColumn = 1 + Math.floor(Math.random() * 9);
+            //The template (a jquery collection) is chosen randomly
             let template = Math.floor(Math.random() * 7);
+            //Elements of the collection are colored
             list = templates[template](startColumn);
             list.removeClass('bg-white').addClass('bg-primary');
+            list.addClass('moving');
         },
         moveDown: () => {
-            //delay(1000);
+            //If there is a column with multiple moving elements we need to move top ones after the bottom
+            let topElements = $([]);
             list.each((index, domEle) => {
-                //$(element).removeClass('bg-primary').addClass('bg-white');
-                //$(element).next().removeClass('bg-white').addClass('bg-primary');
-                $(domEle).before($(domEle).next());
-                /*for (let index = 1; index < 12; index++) {
-                    if ($(this).hasClass('order-' + index)){
-                        let divBelow = $(this).parent.find('.order-' + (index + 1));
-                        $(this).removeClass('order-' + index).addClass('order-' + (index + 1));
-                        divBelow.removeClass('order-' + (index + 1)).addClass('order-' + index);
-                        break;
-                    }
-                }*/
+                if ($(domEle).next().hasClass('moving')){
+                    topElements.add($(domEle));
+                }
+                else {
+                    $(domEle).before($(domEle).next());
+                }
+                topElements.each(() => {
+                    $(domEle).before($(domEle).next());
+                });
             });            
         }
     };
-    /*
-        [1, 1, 0],  [0, 1, 1],  [1, 1, 0],  [1, 1, 1],  [1, 1, 1],  [1, 0, 0],  [1, 1, 1, 1],   
-        [0, 1, 1]   [1, 1, 0]   [1, 1, 0]   [1, 0, 0]   [0, 1, 0]   [1, 1, 1]   [0, 0, 0, 0]
-    */
 }
 
+//Starts the game duh //singleton?
 function start(){
-    /*var state = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    ];*/
     var fig1 = figure();
     fig1.create();
-    //for (let i = 0; i < 1; i++){
+    //for (let i = 0; i < 5; i++){
+    function move(){
         fig1.moveDown();
+        setTimeout(move, 1000);
+    }
+    move();
     //}
 }
