@@ -125,33 +125,113 @@ const templates = [
     }
 ];
 
+const colors = [
+    'bg-success',
+    'bg-danger',
+    'bg-warning',
+    'bg-info'
+];
+const backgroundColor = 'bg-white';
+
 function figure(){
+    //A Jquery collection of DOM divs - parts of the figure
     var list;
+    var color;
+    //Closures   
     return {
         create: () => {
             //The position is chosen randomly
-            let startColumn = 1 + Math.floor(Math.random() * 9);
+            let startColumn = 2 + Math.floor(Math.random() * 8);
             //The template (a jquery collection) is chosen randomly
-            let template = Math.floor(Math.random() * 7);
-            //Elements of the collection are colored
-            list = templates[template](startColumn);
-            list.removeClass('bg-white').addClass('bg-primary');
+            let chosenTemplate = Math.floor(Math.random() * 7);
+            //color
+            color = Math.floor(Math.random() * 4);
+            //The figure is created by applying a bg class to all the divs in the collection
+            list = templates[chosenTemplate](startColumn);
+            list.removeClass(backgroundColor).addClass(colors[color]);
             list.addClass('moving');
         },
-        moveDown: () => {
-            //If there is a column with multiple moving elements we need to move top ones after the bottom
-            let topElements = $([]);
-            list.each((index, domEle) => {
-                if ($(domEle).next().hasClass('moving')){
-                    topElements.add($(domEle));
+        //Move the figure 1 cell down
+        autoMove: () => {
+            var stopMoving = false;
+            function step(){
+                //Check if need to stop moving figure
+                list.each((index, domEle) => {
+                    //If collided with another figure
+                    if (!$(domEle).next().hasClass(backgroundColor)
+                        && !$(domEle).next().hasClass('moving')){
+                        stopMoving = true;
+                    }
+                    //If reached the bottom of the grid
+                    if ($(domEle).next().length == 0){
+                        stopMoving = true;
+                    }
+                });
+                if (stopMoving){
+                    list.removeClass('moving');
+                    return;
                 }
-                else {
-                    $(domEle).before($(domEle).next());
-                }
-                topElements.each(() => {
+                //If there is a column with multiple moving elements ...
+                list.each((index, domEle) => {
+                    while ($(domEle).next().hasClass('moving')){
+                        $(domEle).before($(domEle).next());
+                    }
                     $(domEle).before($(domEle).next());
                 });
-            });            
+                //Not setInterval because the stop condition is inside the step() function
+                setTimeout(step, 1000);
+            }
+            setTimeout(step, 1000);
+        },
+        moveLeft: () => {
+            var leftFigure = $([]);
+            //Check if it is not possible to move left
+            list.each((index, domEle) => {
+                if ($(domEle).parent().prev().length == 0){
+                    return;
+                }
+            });
+            /*
+                Find the new collection that is 1 step to the left by looking up indexes of each element 
+                (their vertical position in the column compared to their sibling divs)
+                and using them to find each element's left neighbor div
+            */
+            list.each((index, domEle) => {
+                leftFigure = leftFigure.add(
+                    $(domEle).parent().prev().children().eq(
+                        $(domEle).parent().children().index($(domEle))
+                    )
+                );
+            });
+            //Replacing the old list with the new one
+            list.removeClass(colors[color] + ' moving').addClass(backgroundColor);
+            leftFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
+            list = leftFigure;
+        },
+        moveRight: () => {
+            var rightFigure = $([]);
+            //Check if it is not possible to move right
+            list.each((index, domEle) => {
+                if ($(domEle).parent().next().length == 0){
+                    return;
+                }
+            });
+            /*
+                Find the new collection that is 1 step to the right by looking up indexes of each element 
+                (their vertical position in the column compared to their sibling divs)
+                and using them to find each element's right neighbor div
+            */
+            list.each((index, domEle) => {
+                rightFigure = rightFigure.add(
+                    $(domEle).parent().next().children().eq(
+                        $(domEle).parent().children().index($(domEle))
+                    )
+                );
+            });
+            //Replacing the old list with the new one
+            list.removeClass(colors[color] + ' moving').addClass(backgroundColor);
+            rightFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
+            list = rightFigure;
         }
     };
 }
@@ -161,10 +241,26 @@ function start(){
     var fig1 = figure();
     fig1.create();
     //for (let i = 0; i < 5; i++){
-    function move(){
-        fig1.moveDown();
-        setTimeout(move, 1000);
-    }
-    move();
+    fig1.autoMove();
+    $(document).keydown(function(e) {
+        switch(e.key) {
+            case 'ArrowLeft': // left
+            fig1.moveLeft();
+            break;
+    
+            case 'ArrowUp': // up
+            break;
+    
+            case 'ArrowRight': // right
+            fig1.moveRight();
+            break;
+    
+            case 'ArrowDown': // down
+            break;
+    
+            default: return; // exit this handler for other keys
+        }
+        e.preventDefault(); // prevent the default action (scroll / move caret)
+    });
     //}
 }

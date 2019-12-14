@@ -28,13 +28,13 @@
             <div class="collapse navbar-collapse" id="Navbar">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item active">
-                        <a class="nav-link" href="#"><i class="fa fa-border-all fa-lg"></i> bootstrap (jquery?) tetris</a>
+                        <a class="nav-link" href="#"><i class="fa fa-square"></i> DOM Tetris</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="fa fa-github fa-lg"></i> Github</a>
+                        <a class="nav-link" href="#"><i class="fa fa-github"></i> Github</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="./contactus.html"><i class="fa fa-address-card fa-lg"></i> About Me</a>
+                        <a class="nav-link" href="./contactus.html"><i class="fa fa-address-card"></i> About Me</a>
                     </li>
                 </ul>
             </div>
@@ -51,30 +51,27 @@
             <div class="col-12 offset-sm-1 col-sm-5">
                 <div class="card text-center">
                     <div class="card-header">
-                      Header
+                      Game Description
                     </div>
                     <div class="card-body">
-                      <h5 class="card-title">xd</h5>
-                      <p class="card-text">done by adding and removing bootstrap classes</p>
-                      <a class="btn btn-primary text-white" id="start-button">test button</a>
+                        <h5 class="card-title">Made with Bootstrap & JQuery</h5>
+                        <p class="card-text">The grid is made of 12 .col-1 columns with 12 divs each.</p> 
+                        <p class="card-text">The moving figure is a JQuery collection of divs. 
+                            Falling down is implemented by exchanging positions of divs with JQuery before().</p>
+                        <p class="card-text">
+                            Side movement looks up elements with the same vertical position 
+                            in adjacent columns using JQuery index()&eq().</p>
+                        <p class="card-text">Collision logic uses .bg-color classes with JQuery hasClass().</p>
+                        <a class="btn btn-primary text-white" id="start-button">test button</a>
                     </div>
                     <div class="card-footer text-muted">
-                      footer muted
+                      :)
                     </div>
                   </div>
             </div>
         </div>
     </div>
-
-    <footer>
-        <div class="container">
-            <div class="row">             
-                <div class="col-4 offset-1 col-sm-2">
-                    <h5>github link here</h5>
-                </div>
-           </div>
-        </div>
-    </footer>
+    
 </body>
 
 </html>

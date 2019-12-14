@@ -4,13 +4,8 @@
 
 .row-content {
   margin: 0px auto;
-  padding: 30px 0px;
-  border-bottom: 1px ridge;
-  min-height: 400px; }
-
-.footer {
-  margin: 0px auto;
-  padding: 20px 0px; }
+  padding: 20px 0px;
+  border-bottom: 1px ridge; }
 
 body {
   background-color: #F1EED9;
@@ -22,7 +17,7 @@ body {
 
 .empty-cell {
   border: 1px solid rgba(0, 0, 0, .1);
-  /* A trick to make the height the same as width */
+  /* A trick I found on Stackoverflow to make the height the same as width */
   width: 100%;
   height: 0;
   padding-bottom: 100%;
