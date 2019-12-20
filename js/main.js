@@ -37,9 +37,7 @@ const templates = [
     (startColumn) => {
         let column1 = $('#tetris-column-' + startColumn)
             .children().slice(0, 2);
-            //.find('.order-1, .order-2');
         let column2 = $('#tetris-column-' + (startColumn + 1))
-            //.find('.order-1, .order-2');
             .children().slice(0, 2);
         return column1.add(column2);
     },
@@ -47,81 +45,62 @@ const templates = [
     (startColumn) => {
         let column1 = $('#tetris-column-' + startColumn)
             .children().slice(0, 1);
-            //.find('.order-1');
         let column2 = $('#tetris-column-' + (startColumn + 1))
             .children().slice(0, 2);
-            //.find('.order-1, .order-2');
         let column3 = $('#tetris-column-' + (startColumn + 2))
             .children().slice(1, 2);
-            //.find('.order-2');
         return column1.add(column2).add(column3);
     },
     //S
     (startColumn) => {
         let column1 = $('#tetris-column-' + startColumn)
             .children().slice(1, 2);
-            //.find('.order-2');
         let column2 = $('#tetris-column-' + (startColumn + 1))
             .children().slice(0, 2);
-            //.find('.order-1, .order-2');
         let column3 = $('#tetris-column-' + (startColumn + 2))
             .children().slice(0, 1);
-            //.find('.order-1');
         return column1.add(column2).add(column3);
     },
     //L
     (startColumn) => {
         let column1 = $('#tetris-column-' + startColumn)
             .children().slice(0, 2);
-            //.find('.order-1, .order-2');
         let column2 = $('#tetris-column-' + (startColumn + 1))
             .children().slice(0, 1);
-            //.find('.order-1');
         let column3 = $('#tetris-column-' + (startColumn + 2))
             .children().slice(0, 1);
-            //.find('.order-1');
         return column1.add(column2).add(column3);
     },
     //J
     (startColumn) => {
         let column1 = $('#tetris-column-' + startColumn)
             .children().slice(0, 2);
-            //.find('.order-1, .order-2');
         let column2 = $('#tetris-column-' + (startColumn + 1))
             .children().slice(1, 2);
-            //.find('.order-2');
         let column3 = $('#tetris-column-' + (startColumn + 2))
             .children().slice(1, 2);  
-            //.find('.order-2');
         return column1.add(column2).add(column3);
     },
     //T
     (startColumn) => {
         let column1 = $('#tetris-column-' + startColumn)
             .children().slice(0, 1);
-            //.find('.order-1');
         let column2 = $('#tetris-column-' + (startColumn + 1))
             .children().slice(0, 2);
-            //.find('.order-1, .order-2');
         let column3 = $('#tetris-column-' + (startColumn + 2))
             .children().slice(0, 1);
-            //.find('.order-1');
         return column1.add(column2).add(column3);
     },
     //I
     (startColumn) => {
         let column1 = $('#tetris-column-' + startColumn)
             .children().slice(0, 1);
-            //.find('.order-1');
         let column2 = $('#tetris-column-' + (startColumn + 1))
             .children().slice(0, 1);
-            //.find('.order-1');
         let column3 = $('#tetris-column-' + (startColumn + 2))
             .children().slice(0, 1);
-            //.find('.order-1');
         let column4 = $('#tetris-column-' + (startColumn + 3))
             .children().slice(0, 1);
-            //.find('.order-1');
         return column1.add(column2).add(column3).add(column4);
     }
 ];
@@ -161,10 +140,10 @@ function figure(){
             function step(){
                 //Check if need to stop moving figure
                 list.each((index, domEle) => {
-                    //If collided with another figure (Next div is not empty && Next div is not moving)
+                    //IF collided with another figure (Next div is not empty && Next div is not moving)
                     if ((!$(domEle).next().hasClass(backgroundColor)
                         && !$(domEle).next().hasClass('moving'))
-                        //|| If reached the bottom of the grid 
+                        //OR if reached the bottom of the grid 
                         || ($(domEle).next().length == 0)){
                             stopMoving = true;
                     }
@@ -191,6 +170,7 @@ function figure(){
                 setTimeout(step, 1000);
             }
             setTimeout(step, 1000);
+            //Promise to only continue after the figure stopped moving
             return new Promise(resolve => {
                 function checkMoving(){
                     if (stopMoving){
@@ -198,6 +178,7 @@ function figure(){
                         resolve();
                     }
                 }
+                //Check stopMoving every 200 secs and resolve when stopMoving is true
                 var interval = setInterval(checkMoving, 200);
             });
         },
@@ -256,7 +237,7 @@ function figure(){
                 if ($(domEle).parent().next().length == 0){
                     cannotMove = true;
                 }
-                //If right neighbour element is not empty 
+                //IF right neighbour element is not empty 
                 if ((!$(domEle).parent().next().children().eq(
                         $(domEle).parent().children().index($(domEle)))
                             .hasClass(backgroundColor))
@@ -288,13 +269,33 @@ function figure(){
             list.removeClass(colors[color] + ' moving').addClass(backgroundColor);
             rightFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
             list = rightFigure;
+        },
+        rotate: () => {
+            //let cols = new Set(), rows = new Set();
+            var cols = {};
+            var rows = {};
+            list.each((index, domEle) => {
+                cols[index+''] = $(domEle).parent().index();
+                //cols.add($(domEle).parent().index());
+                rows[index+''] = $(domEle).parent().children().index($(domEle));
+                //rows.add($(domEle).parent().children().index($(domEle)));
+            });
+            var size = [new Set(Object.values(cols)).size, new Set(Object.values(rows)).size];
+            var rotationPointOffset = [Math.floor((new Set(Object.values(rows)).size)/2), 
+                                    Math.floor((new Set(Object.values(cols)).size)/2)];
+            var leftCorner = [Math.min(...Object.values(rows)), Math.min(...Object.values(cols))+1];
+            var rotPoint = $('#tetris-column-'+(leftCorner[1] + rotationPointOffset[1]))
+                                .children().eq(leftCorner[0] + rotationPointOffset[0])
+            //$('#tetris-column-'+leftCorner[1]).children().eq(leftCorner[0]).addClass('bg-black');
+            console.log(Object.keys(cols).length + " " + Object.keys(rows).length);
         }
     };
 }
 
 function cycle(){
     let movingFigure = figure();
-    movingFigure.create();    
+    movingFigure.create();
+    //Keyboard controls     
     $(document).keydown(function(e) {
         switch(e.key) {
             case 'ArrowLeft': // left
@@ -302,6 +303,7 @@ function cycle(){
             break;
     
             case 'ArrowUp': // up - rotate TODO
+            movingFigure.rotate();
             break;
     
             case 'ArrowRight': // right
@@ -315,7 +317,7 @@ function cycle(){
         }
         e.preventDefault(); // prevent the default action (scroll / move caret)
     });
-    //$(document).off("keydown");
+    //Promise to start a new cycle only after current one finishes
     return new Promise(resolve => {
         movingFigure.autoMove().then(
             () => {
@@ -324,9 +326,6 @@ function cycle(){
             }
         );
     });
-    //$(document).off("keydown");
-    //delete movingFigure;
-    //cycle();
 }
 
 //Starts the game duh //singleton?
