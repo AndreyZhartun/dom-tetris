@@ -1,18 +1,20 @@
+//import {Figure} from './Figure.js';
+
 $(document).ready(() => {
     for (let index = 1; index <= 12; index++) {
         $("#game").append(`<div class="col-1 order-`+index+`" id="tetris-column-`+index+`">    
-            <div class="col bg-white empty-cell" id="tetris-col-`+index+`-1">1</div>
-            <div class="col bg-white empty-cell" id="tetris-col-`+index+`-2">2</div>
-            <div class="col bg-white empty-cell" id="tetris-col-`+index+`-3">3</div>
-            <div class="col bg-white empty-cell" id="tetris-col-`+index+`-4">4</div>
-            <div class="col bg-white empty-cell" id="tetris-col-`+index+`-5">5</div>
-            <div class="col bg-white empty-cell" id="tetris-col-`+index+`-6">6</div>
-            <div class="col bg-white empty-cell" id="tetris-col-`+index+`-7">7</div>
-            <div class="col bg-white empty-cell" id="tetris-col-`+index+`-8">8</div>
-            <div class="col bg-white empty-cell" id="tetris-col-`+index+`-9">9</div>
-            <div class="col bg-white empty-cell" id="tetris-col-`+index+`-10">10</div>
-            <div class="col bg-white empty-cell" id="tetris-col-`+index+`-11">11</div>
-            <div class="col bg-white empty-cell" id="tetris-col-`+index+`-12">12</div>
+            <div class="col bg-white cell" id="tetris-col-`+index+`-1">1</div>
+            <div class="col bg-white cell" id="tetris-col-`+index+`-2">2</div>
+            <div class="col bg-white cell" id="tetris-col-`+index+`-3">3</div>
+            <div class="col bg-white cell" id="tetris-col-`+index+`-4">4</div>
+            <div class="col bg-white cell" id="tetris-col-`+index+`-5">5</div>
+            <div class="col bg-white cell" id="tetris-col-`+index+`-6">6</div>
+            <div class="col bg-white cell" id="tetris-col-`+index+`-7">7</div>
+            <div class="col bg-white cell" id="tetris-col-`+index+`-8">8</div>
+            <div class="col bg-white cell" id="tetris-col-`+index+`-9">9</div>
+            <div class="col bg-white cell" id="tetris-col-`+index+`-10">10</div>
+            <div class="col bg-white cell" id="tetris-col-`+index+`-11">11</div>
+            <div class="col bg-white cell" id="tetris-col-`+index+`-12">12</div>
             </div>`);   
     }
 
@@ -21,18 +23,17 @@ $(document).ready(() => {
     });
 
     /*
-        create new figure
-        move it down recursively
-            check if theres enough space
-            change row order
+        keyboard controls
+            rotations
         check full rows
             clear full rows
+            game score
     */
 });
 
 // 7 possible tetrominoes represented as jquery collections
 const templates = [
-    //square
+    //O
     (startColumn) => {
         let column1 = $('#tetris-column-' + startColumn)
             .children().slice(0, 2);
@@ -132,11 +133,13 @@ const colors = [
     'bg-info'
 ];
 const backgroundColor = 'bg-white';
+var isGameover = false;
 
 function figure(){
     //A Jquery collection of DOM divs - parts of the figure
-    var list;
-    var color;
+    let list;
+    //Figure color
+    let color;
     //Closures   
     return {
         create: () => {
@@ -150,6 +153,7 @@ function figure(){
             list = templates[chosenTemplate](startColumn);
             list.removeClass(backgroundColor).addClass(colors[color]);
             list.addClass('moving');
+            return list;
         },
         //Move the figure 1 cell down
         autoMove: () => {
@@ -157,18 +161,23 @@ function figure(){
             function step(){
                 //Check if need to stop moving figure
                 list.each((index, domEle) => {
-                    //If collided with another figure
-                    if (!$(domEle).next().hasClass(backgroundColor)
-                        && !$(domEle).next().hasClass('moving')){
-                        stopMoving = true;
-                    }
-                    //If reached the bottom of the grid
-                    if ($(domEle).next().length == 0){
-                        stopMoving = true;
+                    //If collided with another figure (Next div is not empty && Next div is not moving)
+                    if ((!$(domEle).next().hasClass(backgroundColor)
+                        && !$(domEle).next().hasClass('moving'))
+                        //|| If reached the bottom of the grid 
+                        || ($(domEle).next().length == 0)){
+                            stopMoving = true;
                     }
                 });
                 if (stopMoving){
                     list.removeClass('moving');
+                    //IF an element is in the first row after finishing moving the game is over
+                    list.each((index, domEle) => {
+                        if ($(domEle).parent().children().index($(domEle)) == 0){
+                            isGameover = true;
+                        }
+                    });
+                    //delete list;
                     return;
                 }
                 //If there is a column with multiple moving elements ...
@@ -182,19 +191,47 @@ function figure(){
                 setTimeout(step, 1000);
             }
             setTimeout(step, 1000);
+            return new Promise(resolve => {
+                function checkMoving(){
+                    if (stopMoving){
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }
+                var interval = setInterval(checkMoving, 200);
+            });
         },
         moveLeft: () => {
-            var leftFigure = $([]);
+            //JQuery collection of elements that is 1 step to the left
+            let leftFigure = $([]);
+            //Boolean to check if it's not possible to move
+            let cannotMove = false;
             //Check if it is not possible to move left
             list.each((index, domEle) => {
+                //Reached the edge of the grid
                 if ($(domEle).parent().prev().length == 0){
-                    return;
+                    cannotMove = true;
                 }
+                //IF the left neighbour element is not empty then it's not possible to move
+                if ((!$(domEle).parent().prev().children().eq(
+                        $(domEle).parent().children().index($(domEle)))
+                            .hasClass(backgroundColor))
+                    //AND the left neighbour is not part of the moving figure
+                    && 
+                    (!$(domEle).parent().prev().children().eq(
+                        $(domEle).parent().children().index($(domEle)))
+                            .hasClass('moving'))){
+                                //THEN it's not possible to move
+                                cannotMove = true;
+                    }
             });
+            if (cannotMove){
+                return;
+            }
             /*
                 Find the new collection that is 1 step to the left by looking up indexes of each element 
                 (their vertical position in the column compared to their sibling divs)
-                and using them to find each element's left neighbor div
+                and using them to find each element's left neighbour div
             */
             list.each((index, domEle) => {
                 leftFigure = leftFigure.add(
@@ -209,13 +246,32 @@ function figure(){
             list = leftFigure;
         },
         moveRight: () => {
-            var rightFigure = $([]);
+            //JQuery collection of elements that is 1 step to the right
+            let rightFigure = $([]);
+            //Boolean to check if it's not possible to move
+            let cannotMove = false;
             //Check if it is not possible to move right
             list.each((index, domEle) => {
+                //Reached the edge of the grid
                 if ($(domEle).parent().next().length == 0){
-                    return;
+                    cannotMove = true;
+                }
+                //If right neighbour element is not empty 
+                if ((!$(domEle).parent().next().children().eq(
+                        $(domEle).parent().children().index($(domEle)))
+                            .hasClass(backgroundColor))
+                    //AND the left neighbour is not part of the moving figure
+                    && 
+                    (!$(domEle).parent().next().children().eq(
+                        $(domEle).parent().children().index($(domEle)))
+                            .hasClass('moving'))){
+                                //THEN it's not possible to move
+                                cannotMove = true;
                 }
             });
+            if (cannotMove){
+                return;
+            }
             /*
                 Find the new collection that is 1 step to the right by looking up indexes of each element 
                 (their vertical position in the column compared to their sibling divs)
@@ -236,23 +292,20 @@ function figure(){
     };
 }
 
-//Starts the game duh //singleton?
-function start(){
-    var fig1 = figure();
-    fig1.create();
-    //for (let i = 0; i < 5; i++){
-    fig1.autoMove();
+function cycle(){
+    let movingFigure = figure();
+    movingFigure.create();    
     $(document).keydown(function(e) {
         switch(e.key) {
             case 'ArrowLeft': // left
-            fig1.moveLeft();
+            movingFigure.moveLeft();
             break;
     
-            case 'ArrowUp': // up
+            case 'ArrowUp': // up - rotate TODO
             break;
     
             case 'ArrowRight': // right
-            fig1.moveRight();
+            movingFigure.moveRight();
             break;
     
             case 'ArrowDown': // down
@@ -262,5 +315,28 @@ function start(){
         }
         e.preventDefault(); // prevent the default action (scroll / move caret)
     });
-    //}
+    //$(document).off("keydown");
+    return new Promise(resolve => {
+        movingFigure.autoMove().then(
+            () => {
+                $(document).off("keydown");
+                resolve();
+            }
+        );
+    });
+    //$(document).off("keydown");
+    //delete movingFigure;
+    //cycle();
+}
+
+//Starts the game duh //singleton?
+async function start(){
+    //asynchronous calls so multiple figures don't appear at the same time
+    while (true){
+        await cycle();
+        if (isGameover){
+            $('.card-footer').text('Game over!');
+            break;
+        }
+    }
 }
