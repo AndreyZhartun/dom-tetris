@@ -275,17 +275,45 @@ function figure(){
             var cols = {};
             var rows = {};
             list.each((index, domEle) => {
-                cols[index+''] = $(domEle).parent().index();
+                cols[index] = $(domEle).parent().index();
                 //cols.add($(domEle).parent().index());
-                rows[index+''] = $(domEle).parent().children().index($(domEle));
+                rows[index] = $(domEle).parent().children().index($(domEle));
                 //rows.add($(domEle).parent().children().index($(domEle)));
             });
-            var size = [new Set(Object.values(cols)).size, new Set(Object.values(rows)).size];
+            var size = [new Set(Object.values(rows)).size, new Set(Object.values(cols)).size];
+            var leftCorner = [Math.min(...Object.values(rows)), Math.min(...Object.values(cols))];
+            /*if (size[0] > size[1]){
+                if (leftCorner[1] > 1){
+                    size[1]++;
+                    leftCorner[1]--;
+                }
+                if (size[0] > size[1]){
+                    if ((leftCorner[1] > 0) && (leftCorner[1] < 11)){
+                        size[1] += 2;
+                        leftCorner[1]--;
+                    }
+                }
+            }*/
             var rotationPointOffset = [Math.floor((new Set(Object.values(rows)).size)/2), 
                                     Math.floor((new Set(Object.values(cols)).size)/2)];
-            var leftCorner = [Math.min(...Object.values(rows)), Math.min(...Object.values(cols))+1];
-            var rotPoint = $('#tetris-column-'+(leftCorner[1] + rotationPointOffset[1]))
-                                .children().eq(leftCorner[0] + rotationPointOffset[0])
+            
+            var rotPointDiv = $('#tetris-column-'+(leftCorner[1] + rotationPointOffset[1]+1))
+                                .children().eq(leftCorner[0] + rotationPointOffset[0]);
+
+            var centerCoordinates = [leftCorner[0] + rotationPointOffset[0], 
+                            leftCorner[1] + rotationPointOffset[1]];
+            
+
+            var newCollection = $([]);
+            //поменять роус и колс? матрица поворота х = -у и у = х (90 гр против час стрелки)
+            for (let i=0; i < 4; i++){
+                //cols[i] = rows[i] - centerCoordinates[0];
+                //rows[i] = -(cols[i] - centerCoordinates[1]);
+                //не добавляет в коллекцию?
+                newCollection.add($('#tetris-column-'+(centerCoordinates[1] + rows[i] - centerCoordinates[0] +1))
+                .children().eq(centerCoordinates[0] - (cols[i] - centerCoordinates[1])));
+            }
+
             //$('#tetris-column-'+leftCorner[1]).children().eq(leftCorner[0]).addClass('bg-black');
             console.log(Object.keys(cols).length + " " + Object.keys(rows).length);
         }
