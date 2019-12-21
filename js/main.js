@@ -111,6 +111,10 @@ const colors = [
     'bg-warning',
     'bg-info'
 ];
+var allColors = '';
+colors.forEach((value, index, array) => {
+    allColors += ' ' + value;
+});
 const backgroundColor = 'bg-white';
 var isGameover = false;
 
@@ -119,6 +123,8 @@ function figure(){
     let list;
     //Figure color
     let color;
+    //Fall speed in ms (delay between steps, the less the faster the fall is)
+    let delay = 1000;
     //Closures   
     return {
         create: () => {
@@ -150,6 +156,23 @@ function figure(){
                 });
                 if (stopMoving){
                     list.removeClass('moving');
+                    //Check full rows (should be elsewhere but since I'm also checking for gameover in this block)
+                    let columns = $('.col-1');
+                    //добавить 0 с чеком на геймовер и перенести все в cycle()
+                    for (let rowIndex = 11; rowIndex > 0; rowIndex--){
+                        let checkedRow= $([]);
+                        columns.each((index, domEle) => {
+                            if (!$(domEle).children().eq(rowIndex).hasClass(backgroundColor)){
+                                checkedRow = checkedRow.add($(domEle).children().eq(rowIndex));
+                            }
+                        });
+                        if (checkedRow.length == 12){
+                            checkedRow.each((index, domEle) => {
+                                $(domEle).removeClass(allColors).addClass(backgroundColor);
+                                $(domEle).parent().prepend($(domEle));
+                            });
+                        }
+                    }
                     //IF an element is in the first row after finishing moving the game is over
                     list.each((index, domEle) => {
                         if ($(domEle).parent().children().index($(domEle)) == 0){
@@ -167,9 +190,9 @@ function figure(){
                     $(domEle).before($(domEle).next());
                 });
                 //Not setInterval because the stop condition is inside the step() function
-                setTimeout(step, 1000);
+                setTimeout(step, delay);
             }
-            setTimeout(step, 1000);
+            setTimeout(step, delay);
             //Promise to only continue after the figure stopped moving
             return new Promise(resolve => {
                 function checkMoving(){
@@ -182,6 +205,10 @@ function figure(){
                 var interval = setInterval(checkMoving, 200);
             });
         },
+        decreaseDelay: () => {
+            delay = 200;
+        },
+        //Move the figure 1 step left
         moveLeft: () => {
             //JQuery collection of elements that is 1 step to the left
             let leftFigure = $([]);
@@ -253,10 +280,10 @@ function figure(){
             if (cannotMove){
                 return;
             }
-            /*
+            /*  
                 Find the new collection that is 1 step to the right by looking up indexes of each element 
                 (their vertical position in the column compared to their sibling divs)
-                and using them to find each element's right neighbor div
+                and using them to find each element's right neighbor div 
             */
             list.each((index, domEle) => {
                 rightFigure = rightFigure.add(
@@ -270,6 +297,7 @@ function figure(){
             rightFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
             list = rightFigure;
         },
+        //Rotate the figure 90 degrees cc
         rotate: () => {
             //let cols = new Set(), rows = new Set();
             var cols = {};
@@ -304,18 +332,31 @@ function figure(){
                             leftCorner[1] + rotationPointOffset[1]];
             
 
-            var newCollection = $([]);
-            //поменять роус и колс? матрица поворота х = -у и у = х (90 гр против час стрелки)
+            var rotatedFigure = $([]);
+            //баг: 1х4 фигура на 2 строке повернется с одним дивом на 12-й строке и прекратит игру
+            /* 
+                матрица поворота х = -у и у = х (90 гр против час стрелки)
+            */
             for (let i=0; i < 4; i++){
                 //cols[i] = rows[i] - centerCoordinates[0];
                 //rows[i] = -(cols[i] - centerCoordinates[1]);
-                //не добавляет в коллекцию?
-                newCollection.add($('#tetris-column-'+(centerCoordinates[1] + rows[i] - centerCoordinates[0] +1))
-                .children().eq(centerCoordinates[0] - (cols[i] - centerCoordinates[1])));
+                let rotatedDiv = 
+                    $('#tetris-column-'+(centerCoordinates[1] + rows[i] - centerCoordinates[0] + 1))
+                        .children().eq(centerCoordinates[0] - (cols[i] - centerCoordinates[1]));
+                //Check if the grid wall does not block rotation
+                if (rotatedDiv.length == 0){
+                    return;
+                }
+                //Check if static figures does not block rotation
+                if ((!rotatedDiv.hasClass(backgroundColor)) && (!rotatedDiv.hasClass('moving'))){
+                    return;
+                }
+                rotatedFigure = rotatedFigure.add(rotatedDiv);
             }
-
-            //$('#tetris-column-'+leftCorner[1]).children().eq(leftCorner[0]).addClass('bg-black');
-            console.log(Object.keys(cols).length + " " + Object.keys(rows).length);
+            //Replacing the old list with the new one
+            list.removeClass(colors[color] + ' moving').addClass(backgroundColor);
+            rotatedFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
+            list = rotatedFigure;
         }
     };
 }
@@ -339,6 +380,7 @@ function cycle(){
             break;
     
             case 'ArrowDown': // down
+            movingFigure.decreaseDelay();
             break;
     
             default: return; // exit this handler for other keys
