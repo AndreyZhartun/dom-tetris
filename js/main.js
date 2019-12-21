@@ -1,33 +1,45 @@
 //import {Figure} from './Figure.js';
 
 $(document).ready(() => {
+    //Building the grid dynamically
     for (let index = 1; index <= 12; index++) {
         $("#game").append(`<div class="col-1 order-`+index+`" id="tetris-column-`+index+`">    
-            <div class="col bg-white cell" id="tetris-col-`+index+`-1">1</div>
-            <div class="col bg-white cell" id="tetris-col-`+index+`-2">2</div>
-            <div class="col bg-white cell" id="tetris-col-`+index+`-3">3</div>
-            <div class="col bg-white cell" id="tetris-col-`+index+`-4">4</div>
-            <div class="col bg-white cell" id="tetris-col-`+index+`-5">5</div>
-            <div class="col bg-white cell" id="tetris-col-`+index+`-6">6</div>
-            <div class="col bg-white cell" id="tetris-col-`+index+`-7">7</div>
-            <div class="col bg-white cell" id="tetris-col-`+index+`-8">8</div>
-            <div class="col bg-white cell" id="tetris-col-`+index+`-9">9</div>
-            <div class="col bg-white cell" id="tetris-col-`+index+`-10">10</div>
-            <div class="col bg-white cell" id="tetris-col-`+index+`-11">11</div>
-            <div class="col bg-white cell" id="tetris-col-`+index+`-12">12</div>
+            <div class="col bg-white cell">1</div>
+            <div class="col bg-white cell">2</div>
+            <div class="col bg-white cell">3</div>
+            <div class="col bg-white cell">4</div>
+            <div class="col bg-white cell">5</div>
+            <div class="col bg-white cell">6</div>
+            <div class="col bg-white cell">7</div>
+            <div class="col bg-white cell">8</div>
+            <div class="col bg-white cell">9</div>
+            <div class="col bg-white cell">10</div>
+            <div class="col bg-white cell">11</div>
+            <div class="col bg-white cell">12</div>
             </div>`);   
     }
 
-    $("#start-button").on("click", () => {
+    $("#start-button").on("click", (e) => {
+        $("#gameover-alert").hide();
+        $('#start-button').addClass('disabled').attr('tabindex', '-1');
+        $('#score').text('Game score: 0');
+        reset();
         start();
     });
 
+    /*$('input[type="text"]').keyup(function() {
+        if($(this).val() != '') {
+           $(':input[type="submit"]').prop('disabled', false);
+        }
+     });*/
+
+    $("#debug-button").on("click", () => {
+        $(".cell").toggleClass('debug-mode');
+    });
+
     /*
-        keyboard controls
-            rotations
-        check full rows
-            clear full rows
-            game score
+        left text
+        reset and button
     */
 });
 
@@ -106,6 +118,8 @@ const templates = [
 ];
 
 const colors = [
+    'bg-secondary',
+    'bg-dark',
     'bg-success',
     'bg-danger',
     'bg-warning',
@@ -116,6 +130,8 @@ colors.forEach((value, index, array) => {
     allColors += ' ' + value;
 });
 const backgroundColor = 'bg-white';
+var gameSpeed = 1000;
+var gameScore = 0;
 var isGameover = false;
 
 function figure(){
@@ -124,16 +140,16 @@ function figure(){
     //Figure color
     let color;
     //Fall speed in ms (delay between steps, the less the faster the fall is)
-    let delay = 1000;
+    let delay = gameSpeed;
     //Closures   
     return {
         create: () => {
             //The position is chosen randomly
             let startColumn = 2 + Math.floor(Math.random() * 8);
             //The template (a jquery collection) is chosen randomly
-            let chosenTemplate = Math.floor(Math.random() * 7);
+            let chosenTemplate = Math.floor(Math.random() * templates.length);
             //color
-            color = Math.floor(Math.random() * 4);
+            color = Math.floor(Math.random() * colors.length);
             //The figure is created by applying a bg class to all the divs in the collection
             list = templates[chosenTemplate](startColumn);
             list.removeClass(backgroundColor).addClass(colors[color]);
@@ -142,7 +158,7 @@ function figure(){
         },
         //Move the figure 1 cell down
         autoMove: () => {
-            var stopMoving = false;
+            let stopMoving = false;
             function step(){
                 //Check if need to stop moving figure
                 list.each((index, domEle) => {
@@ -156,29 +172,8 @@ function figure(){
                 });
                 if (stopMoving){
                     list.removeClass('moving');
-                    //Check full rows (should be elsewhere but since I'm also checking for gameover in this block)
-                    let columns = $('.col-1');
-                    //добавить 0 с чеком на геймовер и перенести все в cycle()
-                    for (let rowIndex = 11; rowIndex > 0; rowIndex--){
-                        let checkedRow= $([]);
-                        columns.each((index, domEle) => {
-                            if (!$(domEle).children().eq(rowIndex).hasClass(backgroundColor)){
-                                checkedRow = checkedRow.add($(domEle).children().eq(rowIndex));
-                            }
-                        });
-                        if (checkedRow.length == 12){
-                            checkedRow.each((index, domEle) => {
-                                $(domEle).removeClass(allColors).addClass(backgroundColor);
-                                $(domEle).parent().prepend($(domEle));
-                            });
-                        }
-                    }
-                    //IF an element is in the first row after finishing moving the game is over
-                    list.each((index, domEle) => {
-                        if ($(domEle).parent().children().index($(domEle)) == 0){
-                            isGameover = true;
-                        }
-                    });
+                    
+                    
                     //delete list;
                     return;
                 }
@@ -202,7 +197,7 @@ function figure(){
                     }
                 }
                 //Check stopMoving every 200 secs and resolve when stopMoving is true
-                var interval = setInterval(checkMoving, 200);
+                let interval = setInterval(checkMoving, 200);
             });
         },
         decreaseDelay: () => {
@@ -297,57 +292,41 @@ function figure(){
             rightFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
             list = rightFigure;
         },
-        //Rotate the figure 90 degrees cc
+        //Rotate the figure 90 degrees c clockwise
         rotate: () => {
-            //let cols = new Set(), rows = new Set();
-            var cols = {};
-            var rows = {};
+            let cols = {};
+            let rows = {};
+            //Finding indexes (the coordinates with respect to grid) of each element
             list.each((index, domEle) => {
                 cols[index] = $(domEle).parent().index();
-                //cols.add($(domEle).parent().index());
                 rows[index] = $(domEle).parent().children().index($(domEle));
-                //rows.add($(domEle).parent().children().index($(domEle)));
             });
-            var size = [new Set(Object.values(rows)).size, new Set(Object.values(cols)).size];
-            var leftCorner = [Math.min(...Object.values(rows)), Math.min(...Object.values(cols))];
-            /*if (size[0] > size[1]){
-                if (leftCorner[1] > 1){
-                    size[1]++;
-                    leftCorner[1]--;
-                }
-                if (size[0] > size[1]){
-                    if ((leftCorner[1] > 0) && (leftCorner[1] < 11)){
-                        size[1] += 2;
-                        leftCorner[1]--;
-                    }
-                }
-            }*/
-            var rotationPointOffset = [Math.floor((new Set(Object.values(rows)).size)/2), 
+            //Finding the coordinates of the top left corner
+            let leftCorner = [Math.min(...Object.values(rows)), Math.min(...Object.values(cols))];
+            //Finding the coordinates of the center div with respect to the left corner
+            let rotationPointOffset = [Math.floor((new Set(Object.values(rows)).size)/2), 
                                     Math.floor((new Set(Object.values(cols)).size)/2)];
-            
-            var rotPointDiv = $('#tetris-column-'+(leftCorner[1] + rotationPointOffset[1]+1))
-                                .children().eq(leftCorner[0] + rotationPointOffset[0]);
-
-            var centerCoordinates = [leftCorner[0] + rotationPointOffset[0], 
-                            leftCorner[1] + rotationPointOffset[1]];
-            
-
-            var rotatedFigure = $([]);
+            //Finding the coordinates of the central div - it will be the pivot point
+            let centerCoordinates = [leftCorner[0] + rotationPointOffset[0], 
+                                        leftCorner[1] + rotationPointOffset[1]];
+            //New collection of rotated elements
+            let rotatedFigure = $([]);
             //баг: 1х4 фигура на 2 строке повернется с одним дивом на 12-й строке и прекратит игру
             /* 
-                матрица поворота х = -у и у = х (90 гр против час стрелки)
+                Using the rotation matrix for 90 degrees counter clockwise
+                we need to assign х = -у and у = х
             */
+            //Not each because we already have dicts
             for (let i=0; i < 4; i++){
-                //cols[i] = rows[i] - centerCoordinates[0];
-                //rows[i] = -(cols[i] - centerCoordinates[1]);
+                //Find the rotated div
                 let rotatedDiv = 
                     $('#tetris-column-'+(centerCoordinates[1] + rows[i] - centerCoordinates[0] + 1))
                         .children().eq(centerCoordinates[0] - (cols[i] - centerCoordinates[1]));
-                //Check if the grid wall does not block rotation
+                //Check if the grid wall does not block rotation (if the div exists)
                 if (rotatedDiv.length == 0){
                     return;
                 }
-                //Check if static figures does not block rotation
+                //Check if board state does not block rotation (no divs of other figures in the way)
                 if ((!rotatedDiv.hasClass(backgroundColor)) && (!rotatedDiv.hasClass('moving'))){
                     return;
                 }
@@ -362,6 +341,7 @@ function figure(){
 }
 
 function cycle(){
+    //Initialize to use closure functions and create the figure
     let movingFigure = figure();
     movingFigure.create();
     //Keyboard controls     
@@ -371,7 +351,7 @@ function cycle(){
             movingFigure.moveLeft();
             break;
     
-            case 'ArrowUp': // up - rotate TODO
+            case 'ArrowUp': // rotate 90 degrees clockwise
             movingFigure.rotate();
             break;
     
@@ -379,7 +359,7 @@ function cycle(){
             movingFigure.moveRight();
             break;
     
-            case 'ArrowDown': // down
+            case 'ArrowDown': // increase falling speed
             movingFigure.decreaseDelay();
             break;
     
@@ -391,21 +371,73 @@ function cycle(){
     return new Promise(resolve => {
         movingFigure.autoMove().then(
             () => {
+                //Remove keyboard controls
                 $(document).off("keydown");
+                //Check full rows and clear them by making the divs first children and removing bg-color
+                let columns = $('.col-1');
+                //Find divs with equal vertical positions in each column
+                for (let rowIndex = 11; rowIndex > 0; rowIndex--){
+                    let checkedRow= $([]);
+                    columns.each((index, domEle) => {
+                        //Count the divs with non-white background
+                        if (!$(domEle).children().eq(rowIndex).hasClass(backgroundColor)){
+                            checkedRow = checkedRow.add($(domEle).children().eq(rowIndex));
+                        }
+                    });
+                    //IF we found 12 divs with non-white backgrounds the row is full
+                    if (checkedRow.length == 12){
+                        checkedRow.each((index, domEle) => {
+                            gameScore += 100;
+                            //The divs can be any color so we remove all color classes
+                            $(domEle).removeClass(allColors).addClass(backgroundColor);
+                            //Move the divs up in their respective columns
+                            $(domEle).parent().prepend($(domEle));
+                            //Conpensate the shift in rows since all other indexes increased by one 
+                            rowIndex++;
+                        });
+                    }
+                }
+                //Changing the visible score
+                $('#score').text('Game score: ' + gameScore);
+                //IF an element with non-white background is in the first row after clearing rows the game is over
+                let topRow = $([]);
+                columns.each((index, domEle) => {
+                    if (!$(domEle).children().eq(0).hasClass(backgroundColor)){
+                        topRow = topRow.add($(domEle).children().eq(0));
+                    }
+                });
+                if (topRow.length > 0){
+                    isGameover = true;
+                }
+                //Speeding the game up a little
+                if (gameSpeed > 250){
+                    gameSpeed -= Math.floor(gameSpeed * 0.04);
+                }
+                //Resolve that the cycle is finished                
                 resolve();
             }
         );
     });
 }
 
-//Starts the game duh //singleton?
+//Starts the endless loop of cycles
 async function start(){
     //asynchronous calls so multiple figures don't appear at the same time
     while (true){
         await cycle();
         if (isGameover){
-            $('.card-footer').text('Game over!');
             break;
         }
     }
+    $("#gameover-alert").text("The game is over! Your score: " + gameScore);
+    $("#gameover-alert").show();
+    $('#start-button').removeClass('disabled').attr('tabindex', '0');
+}
+
+function reset(){
+    
+    gameScore = 0;    
+    gameSpeed = 1000;
+    isGameover = false;
+    $('.cell').removeClass(allColors).addClass(backgroundColor);
 }
