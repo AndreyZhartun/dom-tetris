@@ -1,5 +1,3 @@
-//import {Figure} from './Figure.js';
-
 $(document).ready(() => {
     //Building the grid dynamically
     for (let index = 1; index <= 12; index++) {
@@ -19,28 +17,18 @@ $(document).ready(() => {
             </div>`);   
     }
 
+    //Reset the game state, start the game and disable the start button
     $("#start-button").on("click", (e) => {
         $("#gameover-alert").hide();
-        $('#start-button').addClass('disabled').attr('tabindex', '-1');
+        $('#start-button').text('Started the game').addClass('disabled').attr('tabindex', '-1');
         $('#score').text('Game score: 0');
         reset();
         start();
     });
 
-    /*$('input[type="text"]').keyup(function() {
-        if($(this).val() != '') {
-           $(':input[type="submit"]').prop('disabled', false);
-        }
-     });*/
-
     $("#debug-button").on("click", () => {
         $(".cell").toggleClass('debug-mode');
     });
-
-    /*
-        left text
-        reset and button
-    */
 });
 
 // 7 possible tetrominoes represented as jquery collections
@@ -117,6 +105,7 @@ const templates = [
     }
 ];
 
+//Color classes and game constants
 const colors = [
     'bg-secondary',
     'bg-dark',
@@ -130,10 +119,13 @@ colors.forEach((value, index, array) => {
     allColors += ' ' + value;
 });
 const backgroundColor = 'bg-white';
+const columnsCount = 12;
 var gameSpeed = 1000;
 var gameScore = 0;
 var isGameover = false;
 
+//All figure-related logic is in this function
+//Can be considered a class, but JS classes are syntax sugar anyway
 function figure(){
     //A Jquery collection of DOM divs - parts of the figure
     let list;
@@ -145,7 +137,7 @@ function figure(){
     return {
         create: () => {
             //The position is chosen randomly
-            let startColumn = 2 + Math.floor(Math.random() * 8);
+            let startColumn = 2 + Math.floor(Math.random() * (columnsCount - 4));
             //The template (a jquery collection) is chosen randomly
             let chosenTemplate = Math.floor(Math.random() * templates.length);
             //color
@@ -376,7 +368,7 @@ function cycle(){
                 //Check full rows and clear them by making the divs first children and removing bg-color
                 let columns = $('.col-1');
                 //Find divs with equal vertical positions in each column
-                for (let rowIndex = 11; rowIndex > 0; rowIndex--){
+                for (let rowIndex = columnsCount - 1; rowIndex > 0; rowIndex--){
                     let checkedRow= $([]);
                     columns.each((index, domEle) => {
                         //Count the divs with non-white background
@@ -385,7 +377,7 @@ function cycle(){
                         }
                     });
                     //IF we found 12 divs with non-white backgrounds the row is full
-                    if (checkedRow.length == 12){
+                    if (checkedRow.length == columnsCount){
                         checkedRow.each((index, domEle) => {
                             gameScore += 100;
                             //The divs can be any color so we remove all color classes
@@ -411,7 +403,7 @@ function cycle(){
                 }
                 //Speeding the game up a little
                 if (gameSpeed > 250){
-                    gameSpeed -= Math.floor(gameSpeed * 0.04);
+                    gameSpeed -= Math.floor(gameSpeed * 0.03);
                 }
                 //Resolve that the cycle is finished                
                 resolve();
@@ -422,20 +414,20 @@ function cycle(){
 
 //Starts the endless loop of cycles
 async function start(){
-    //asynchronous calls so multiple figures don't appear at the same time
+    //asynchronous call so multiple figures don't appear at the same time
     while (true){
         await cycle();
         if (isGameover){
             break;
         }
     }
+    //This part is reached only after the game is over
     $("#gameover-alert").text("The game is over! Your score: " + gameScore);
     $("#gameover-alert").show();
-    $('#start-button').removeClass('disabled').attr('tabindex', '0');
+    $('#start-button').text('Play again?').removeClass('disabled').attr('tabindex', '0');
 }
 
 function reset(){
-    
     gameScore = 0;    
     gameSpeed = 1000;
     isGameover = false;
