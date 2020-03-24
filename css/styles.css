@@ -22,8 +22,8 @@ body {
 #game {
   box-shadow: 5px 5px 20px; }
 
-#accordion {
-  margin-bottom: 10px; }
+#start-button {
+  margin-right: 5px; }
 
 .cell {
   color: rgba(0, 0, 0, 0);
