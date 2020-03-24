@@ -4,20 +4,12 @@
   "description": "first nodejs proj",
   "main": "index.html",
   "scripts": {
-    "start": "npm run lite",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lite": "lite-server",
-    "scss": "node-sass -o css/ css/",
-    "clean": "rimraf docs",
-    "copyfonts": "copyfiles -f node_modules/font-awesome/fonts/* docs/fonts",
-    "usemin": "usemin index.html -d docs --htmlmin -o docs/index.html",
-    "build": "npm run clean && npm run imagemin && npm run copyfonts && npm run usemin"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "AZ",
   "license": "ISC",
   "devDependencies": {
     "browser-sync": "^2.26.7",
-    "cssmin": "^0.4.3",
     "del": "^5.1.0",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
@@ -25,19 +17,12 @@
     "gulp-htmlmin": "^5.0.1",
     "gulp-rev": "^9.0.0",
     "gulp-sass": "^4.0.2",
-    "gulp-uglify": "^3.0.2",
-    "gulp-usemin": "^0.3.30",
-    "htmlmin": "0.0.7",
-    "lite-server": "^2.5.4",
-    "node-sass": "^4.13.1",
-    "rimraf": "^3.0.2",
-    "uglify-js": "^3.8.0",
-    "usemin-cli": "^0.5.1"
+    "gulp-terser": "^1.2.0",
+    "gulp-usemin": "^0.3.30"
   },
   "dependencies": {
     "bootstrap": "^4.4.1",
     "font-awesome": "^4.7.0",
-    "gulp-terser": "^1.2.0",
     "jquery": "^3.4.1",
     "popper.js": "^1.16.1"
   }
