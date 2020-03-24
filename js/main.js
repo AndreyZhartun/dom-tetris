@@ -188,8 +188,8 @@ function figure(){
                         resolve();
                     }
                 }
-                //Check stopMoving every 200 secs and resolve when stopMoving is true
-                let interval = setInterval(checkMoving, 200);
+                //Check stopMoving every 100 ms and resolve when stopMoving is true
+                let interval = setInterval(checkMoving, 100);
             });
         },
         decreaseDelay: () => {
