@@ -26,18 +26,18 @@
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
-                    <a class="nav-link"><i class="fa fa-square"></i>JQuery DOM Tetris</a>
+                    <a class="nav-link"><i class="fa fa-square"></i> JQuery DOM Tetris</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="https://github.com/AndreyZhartun/jquery-dom-tetris"><i class="fa fa-github"></i> Github</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/"><i class="fa fa-address-card"></i> About Me</a>
+                    <a class="nav-link" href="/"><i class="fa fa-address-card"></i> Про меня</a>
                 </li>
             </ul>
         </div>
         <span class="navbar-text" id="score">
-            Game Score: --
+            Счет: --
         </span>
     </nav>
 
@@ -45,52 +45,53 @@
         <div class="row justify-content-center row-content">
             <div class="col-12 col-sm-6" >
                 <div class="row justify-content-center" id="game">
-                    
+                    <!-- динамически заполняется, см. main.js -->
                 </div>
             </div>
             <div class="col-12 offset-sm-1 col-sm-5">
                 <div class="card text-center">
                     <div class="card-header">
-                      Game Description
+                      Описание игры
                     </div>
                     <div class="card-body">
-                        <h5 class="card-title">Made with Bootstrap & JQuery</h5>
+                        <h5 class="card-title">Сделано на Bootstrap & JQuery</h5>
                         <div class="row justify-content-center">
                             <div class="col-3">
-                                <i class="fa fa-arrow-left"></i><p>Move the figure left</p>
+                                <i class="fa fa-arrow-left"></i><p>Сдвинуть фигуру влево</p>
                             </div>
                             <div class="col-3">
-                                <i class="fa fa-arrow-right"></i><p>Move the figure right</p>
+                                <i class="fa fa-arrow-right"></i><p>Сдвинуть фигуру вправо</p>
                             </div>
                             <div class="col-3">
-                                <i class="fa fa-arrow-up"></i><p>Rotate counter clockwise</p>
+                                <i class="fa fa-arrow-up"></i><p>Поворот фигуры против ч.с.</p>
                             </div>
                             <div class="col-3">
-                                <i class="fa fa-arrow-down"></i><p>Increase falling speed</p>
+                                <i class="fa fa-arrow-down"></i><p>Увеличить скорость падения</p>
                             </div>
                         </div>
-                        <a class="btn btn-primary text-white" id="start-button">Start the game</a>
+                        <a class="btn btn-primary text-white" id="start-button">Начать игру</a>
                         <div class="alert alert-primary" role="alert" id="gameover-alert" hidden>
-                            The game is over!
+                            Игра окончена!
                         </div>
                         <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapse" aria-expanded="false" aria-controls="collapse">
-                            Implementation <i class="fa fa-chevron-down"></i>
+                            Имплементация <i class="fa fa-chevron-down"></i>
                         </button>
                         <div class="collapse" id="collapse">
                             <div class="card card-body">
-                                The grid is made of 12 .col-1 columns with 12 divs each.
-                                <br>The moving figure is a JQuery collection of divs. 
-                                Falling down is implemented by exchanging positions of divs with JQuery before().
-                                <br>Collision logic uses .bg-color classes with JQuery hasClass().
-                                <br>Side movement looks up elements with the same vertical position 
-                                in adjacent columns using JQuery index()&eq().
+                                Игровое поле состоит из 12 .col-1 колонн с 12 div-ами в каждой.
+                                <br>Движущаяся фигура представляет собой коллекцию элементов JQuery. 
+                                Падение осуществляется путем смены мест div-ов с помощью функции JQuery before().
+                                <br>Столкновения проверяются путем проверки наличия классов цвета с помощью функции JQuery hasClass().
+                                <br>Боковое движение основано на нахождении элементов на таких же вертикальных позициях 
+                                в соседних колоннах с помощью функций JQuery index()&eq().
+                                <br>Поворот фигуры реализован на основе матрицы поворота.
                             </div>
                         </div>
                     </div>
                     <div class="card-footer text-muted">
                         <div class="btn-group-toggle" data-toggle="buttons">
                             <label class="btn btn-secondary btn-sm">
-                              <input type="checkbox" id="debug-button" checked> Toggle debug mode
+                              <input type="checkbox" id="debug-button" checked> Режим отладки
                             </label>
                         </div>
                     </div>

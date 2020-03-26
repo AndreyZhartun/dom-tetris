@@ -1,5 +1,5 @@
 $(document).ready(() => {
-    //Динамическое создание игрового поля, цифры внутри элементов для отладки, их не видно в игре
+    //Building the grid dynamically
     for (let index = 1; index <= 12; index++) {
         $("#game").append(`<div class="col-1 order-`+index+`" id="tetris-column-`+index+`">    
             <div class="col bg-white cell">1</div>
@@ -17,24 +17,23 @@ $(document).ready(() => {
             </div>`);   
     }
 
-    //Кнопка для запуска игры после очистки поля и переменных 
+    //Reset the game state, start the game and disable the start button
     $("#start-button").on("click", (e) => {
         $("#gameover-alert").hide();
-        $('#start-button').text('Игра началась').addClass('disabled').attr('tabindex', '-1');
-        $('#score').text('Счет: 0');
+        $('#start-button').text('Started the game').addClass('disabled').attr('tabindex', '-1');
+        $('#score').text('Game score: 0');
         reset();
         start();
     });
 
-    //Вкл/выкл режим отладки
     $("#debug-button").on("click", () => {
         $(".cell").toggleClass('debug-mode');
     });
 });
 
-// 7 шаблонов фигур в виде JQuery коллекций элементов
+// 7 possible tetrominoes represented as jquery collections
 const templates = [
-    //O - квадрат
+    //O
     (startColumn) => {
         let column1 = $('#tetris-column-' + startColumn)
             .children().slice(0, 2);
@@ -106,7 +105,7 @@ const templates = [
     }
 ];
 
-//Классы цветов и константы игры
+//Color classes and game constants
 const colors = [
     'bg-secondary',
     'bg-dark',
@@ -125,62 +124,63 @@ var gameSpeed = 1000;
 var gameScore = 0;
 var isGameover = false;
 
-//Все, что связано с манипуляцией фигур, здевь в виде замыканий
-//По сути класс, но классы в js это те же функции, так что особого смысла делать классом не видел
+//All figure-related logic is in this function
+//Can be considered a class, but JS classes are syntax sugar anyway
 function figure(){
-    //JQuery коллекция DOM элементов, входящих в фигуру  
+    //A Jquery collection of DOM divs - parts of the figure
     let list;
-    //Цвет фигуры - нужен для движений в стороны и поворотов, так как там используется перекрашивание
+    //Figure color
     let color;
-    //Скорость падения в мс (задержка для setTimeout, чем меньше, тем быстрее)
+    //Fall speed in ms (delay between steps, the less the faster the fall is)
     let delay = gameSpeed;
-    //Замыкания   
+    //Closures   
     return {
         create: () => {
-            //Случайный выбор позиции
+            //The position is chosen randomly
             let startColumn = 2 + Math.floor(Math.random() * (columnsCount - 4));
-            //Случайный выбор шаблона
+            //The template (a jquery collection) is chosen randomly
             let chosenTemplate = Math.floor(Math.random() * templates.length);
-            //Случайный выбор цвета
+            //color
             color = Math.floor(Math.random() * colors.length);
-            //Затем красим все элементы в цвет и запоминаем, что они движутся
+            //The figure is created by applying a bg class to all the divs in the collection
             list = templates[chosenTemplate](startColumn);
             list.removeClass(backgroundColor).addClass(colors[color]);
             list.addClass('moving');
             return list;
         },
-        //Авто движение вниз
+        //Move the figure 1 cell down
         autoMove: () => {
             let stopMoving = false;
             function step(){
-                //Проверка, необходимо ли остановиться
+                //Check if need to stop moving figure
                 list.each((index, domEle) => {
-                    //ЕСЛИ столкнулись с другой фигурой (Следующий div не белый && не в движении)
+                    //IF collided with another figure (Next div is not empty && Next div is not moving)
                     if ((!$(domEle).next().hasClass(backgroundColor)
                         && !$(domEle).next().hasClass('moving'))
-                        //ИЛИ ЕСЛИ достигнули дна поля 
+                        //OR if reached the bottom of the grid 
                         || ($(domEle).next().length == 0)){
                             stopMoving = true;
                     }
                 });
                 if (stopMoving){
                     list.removeClass('moving');
+                    
+                    
+                    //delete list;
                     return;
                 }
-                //Меняя местами соседние элементы в одной колонне, мы симулируем падение фигуры
+                //If there is a column with multiple moving elements ...
                 list.each((index, domEle) => {
                     while ($(domEle).next().hasClass('moving')){
-                        //Если в колонне несколько элементов, то каждый сначала сдвигается вниз по фигуре
                         $(domEle).before($(domEle).next());
                     }
                     $(domEle).before($(domEle).next());
                 });
-                //Не setInterval потому что условие прекращения внутри функции step()
+                //Not setInterval because the stop condition is inside the step() function
                 setTimeout(step, delay);
             }
-            //Начало самого первого шага падения
             setTimeout(step, delay);
-            //Промис - только после успешного полного падения фигуры можно продолжать
+            //Promise to only continue after the figure stopped moving
             return new Promise(resolve => {
                 function checkMoving(){
                     if (stopMoving){
@@ -188,35 +188,35 @@ function figure(){
                         resolve();
                     }
                 }
-                //Регулярная проверка состояния падения и resolve
+                //Check stopMoving every 100 ms and resolve when stopMoving is true
                 let interval = setInterval(checkMoving, 100);
             });
         },
         decreaseDelay: () => {
             delay = 200;
         },
-        //Сдвинуть фигуру влево на 1 шаг
+        //Move the figure 1 step left
         moveLeft: () => {
-            //Коллекция элементов, которые находятся на 1 шаг левее текущих
+            //JQuery collection of elements that is 1 step to the left
             let leftFigure = $([]);
-            
+            //Boolean to check if it's not possible to move
             let cannotMove = false;
-            //Проверка, можно ли сдвинуть фигуру
+            //Check if it is not possible to move left
             list.each((index, domEle) => {
-                //ЕСЛИ мы у самого левого края, то нельзя
+                //Reached the edge of the grid
                 if ($(domEle).parent().prev().length == 0){
                     cannotMove = true;
                 }
-                //ЕСЛИ есть хотя бы один элемент, блокирующий движение влево, т.е. он не белый
+                //IF the left neighbour element is not empty then it's not possible to move
                 if ((!$(domEle).parent().prev().children().eq(
                         $(domEle).parent().children().index($(domEle)))
                             .hasClass(backgroundColor))
-                    //И он не в движении
+                    //AND the left neighbour is not part of the moving figure
                     && 
                     (!$(domEle).parent().prev().children().eq(
                         $(domEle).parent().children().index($(domEle)))
                             .hasClass('moving'))){
-                                //ТО нельзя
+                                //THEN it's not possible to move
                                 cannotMove = true;
                     }
             });
@@ -224,9 +224,9 @@ function figure(){
                 return;
             }
             /*
-                Движение влево: найти индекс в колонне всех элементов, сдвинуться влево на колонну 
-                и найти элементы с таким же индексом, запомнить их
-                TODO: сократить
+                Find the new collection that is 1 step to the left by looking up indexes of each element 
+                (their vertical position in the column compared to their sibling divs)
+                and using them to find each element's left neighbour div
             */
             list.each((index, domEle) => {
                 leftFigure = leftFigure.add(
@@ -235,42 +235,42 @@ function figure(){
                     )
                 );
             });
-            //Перекрашивание цветов и замена коллекции новой
+            //Replacing the old list with the new one
             list.removeClass(colors[color] + ' moving').addClass(backgroundColor);
             leftFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
             list = leftFigure;
         },
         moveRight: () => {
-            //Коллекция элементов, которые находятся на 1 шаг левее текущих
+            //JQuery collection of elements that is 1 step to the right
             let rightFigure = $([]);
-            
+            //Boolean to check if it's not possible to move
             let cannotMove = false;
-            //Проверка, можно ли сдвинуть фигуру
+            //Check if it is not possible to move right
             list.each((index, domEle) => {
-                //ЕСЛИ мы у самого левого края, то нельзя
+                //Reached the edge of the grid
                 if ($(domEle).parent().next().length == 0){
                     cannotMove = true;
                 }
-                //ЕСЛИ есть хотя бы один элемент, блокирующий движение влево, т.е. он не белый
+                //IF right neighbour element is not empty 
                 if ((!$(domEle).parent().next().children().eq(
                         $(domEle).parent().children().index($(domEle)))
                             .hasClass(backgroundColor))
-                    //И он не в движении
+                    //AND the left neighbour is not part of the moving figure
                     && 
                     (!$(domEle).parent().next().children().eq(
                         $(domEle).parent().children().index($(domEle)))
                             .hasClass('moving'))){
-                                //ТО нельзя
+                                //THEN it's not possible to move
                                 cannotMove = true;
                 }
             });
             if (cannotMove){
                 return;
             }
-            /*
-                Движение вправо: найти индекс в колонне для каждого элемента, сдвинуться вправо на колонну 
-                и найти элементы с таким же индексом, запомнить их
-                TODO: сократить
+            /*  
+                Find the new collection that is 1 step to the right by looking up indexes of each element 
+                (their vertical position in the column compared to their sibling divs)
+                and using them to find each element's right neighbor div 
             */
             list.each((index, domEle) => {
                 rightFigure = rightFigure.add(
@@ -279,57 +279,52 @@ function figure(){
                     )
                 );
             });
-            //Перекрашивание цветов и замена коллекции новой
+            //Replacing the old list with the new one
             list.removeClass(colors[color] + ' moving').addClass(backgroundColor);
             rightFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
             list = rightFigure;
         },
-        //Поворот фигуры на 90 градусов против ч.с.
+        //Rotate the figure 90 degrees c clockwise
         rotate: () => {
             let cols = {};
             let rows = {};
-            //Запоминаем индексы (координаты в поле) элементов
+            //Finding indexes (the coordinates with respect to grid) of each element
             list.each((index, domEle) => {
                 cols[index] = $(domEle).parent().index();
                 rows[index] = $(domEle).parent().children().index($(domEle));
             });
-            //Находим координаты левого верхнего угла
+            //Finding the coordinates of the top left corner
             let leftCorner = [Math.min(...Object.values(rows)), Math.min(...Object.values(cols))];
-            //Чтобы попасть на центр фигуры с левого верхнего угла надо сдвинуться на половину длины
+            //Finding the coordinates of the center div with respect to the left corner
             let rotationPointOffset = [Math.floor((new Set(Object.values(rows)).size)/2), 
                                     Math.floor((new Set(Object.values(cols)).size)/2)];
-            //Находим координаты div-а в самом центре фигуры - он будет точкой поворота
+            //Finding the coordinates of the central div - it will be the pivot point
             let centerCoordinates = [leftCorner[0] + rotationPointOffset[0], 
                                         leftCorner[1] + rotationPointOffset[1]];
-            //Новая коллекция, в которой будем собирать найденные элементы
+            //New collection of rotated elements
             let rotatedFigure = $([]);
+            //баг: 1х4 фигура на 2 строке повернется с одним дивом на 12-й строке и прекратит игру
             /* 
-                Используем матрицу поворота для 90 градусов: надо присвоить х = -у и у = х
+                Using the rotation matrix for 90 degrees counter clockwise
+                we need to assign х = -у and у = х
             */
-            //Для каждого div-а фигуры, так как мы знаем их индексы, то не нужен each
+            //Not each because we already have dicts
             for (let i=0; i < 4; i++){
-                let newColumn = '#tetris-column-' + 
-                        (centerCoordinates[1] + rows[i] - centerCoordinates[0] + 1); 
-                let newRow = centerCoordinates[0] - (cols[i] - centerCoordinates[1]);
-                /*  Тут был интересный баг: иногда новый индекс ряда был меньше нуля и 
-                *   считался со дна колонны, так что один из повернутых элементов 
-                *   оказывался 12 ряду, а остальные в 1-3 рядах, и игра прекращалась*/
-                if (newRow < 0){
-                    return;
-                }
-                //Найти повернутый div 
-                let rotatedDiv = $(newColumn).children().eq(newRow);
-                //Проверить, что стена не блокирует поворот (т.е div существует)
+                //Find the rotated div
+                let rotatedDiv = 
+                    $('#tetris-column-'+(centerCoordinates[1] + rows[i] - centerCoordinates[0] + 1))
+                        .children().eq(centerCoordinates[0] - (cols[i] - centerCoordinates[1]));
+                //Check if the grid wall does not block rotation (if the div exists)
                 if (rotatedDiv.length == 0){
                     return;
                 }
-                //Проверить, что другие фигуры не блокируют поворот
+                //Check if board state does not block rotation (no divs of other figures in the way)
                 if ((!rotatedDiv.hasClass(backgroundColor)) && (!rotatedDiv.hasClass('moving'))){
                     return;
                 }
                 rotatedFigure = rotatedFigure.add(rotatedDiv);
             }
-            //Перекрашивание и замена
+            //Replacing the old list with the new one
             list.removeClass(colors[color] + ' moving').addClass(backgroundColor);
             rotatedFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
             list = rotatedFigure;
@@ -338,66 +333,65 @@ function figure(){
 }
 
 function cycle(){
-    //Создание фигуры
+    //Initialize to use closure functions and create the figure
     let movingFigure = figure();
     movingFigure.create();
-    //Подключение управления с клавиатуры   
+    //Keyboard controls     
     $(document).keydown(function(e) {
         switch(e.key) {
-            case 'ArrowLeft': 
+            case 'ArrowLeft': // left
             movingFigure.moveLeft();
             break;
     
-            case 'ArrowUp': // поворот
+            case 'ArrowUp': // rotate 90 degrees clockwise
             movingFigure.rotate();
             break;
     
-            case 'ArrowRight': 
+            case 'ArrowRight': // right
             movingFigure.moveRight();
             break;
     
-            case 'ArrowDown': // увеличить скорость падения
+            case 'ArrowDown': // increase falling speed
             movingFigure.decreaseDelay();
             break;
     
-            default: return;
+            default: return; // exit this handler for other keys
         }
-        e.preventDefault();
+        e.preventDefault(); // prevent the default action (scroll / move caret)
     });
-    //Промис - программа продолжит только после окончания цикла
+    //Promise to start a new cycle only after current one finishes
     return new Promise(resolve => {
         movingFigure.autoMove().then(
-            //После того, как фигура успешно упала
             () => {
-                //Убрать управление с клавиатуры
+                //Remove keyboard controls
                 $(document).off("keydown");
-                //Проверить заполненные ряды и очистить их: покрасить белым и сдвинуть в самый верх
+                //Check full rows and clear them by making the divs first children and removing bg-color
                 let columns = $('.col-1');
-                //Для этого найти div-ы с одинаковым индексом во всех колоннах
+                //Find divs with equal vertical positions in each column
                 for (let rowIndex = columnsCount - 1; rowIndex > 0; rowIndex--){
                     let checkedRow= $([]);
                     columns.each((index, domEle) => {
-                        //Посчитать количество НЕ белых div-ов
+                        //Count the divs with non-white background
                         if (!$(domEle).children().eq(rowIndex).hasClass(backgroundColor)){
                             checkedRow = checkedRow.add($(domEle).children().eq(rowIndex));
                         }
                     });
-                    //ЕСЛИ найдено 12 не белых div-ов, то такой ряд полный
+                    //IF we found 12 divs with non-white backgrounds the row is full
                     if (checkedRow.length == columnsCount){
                         checkedRow.each((index, domEle) => {
-                            //Убираем все цвета
+                            gameScore += 100;
+                            //The divs can be any color so we remove all color classes
                             $(domEle).removeClass(allColors).addClass(backgroundColor);
-                            //Сдвигаем вверх в колоннах
+                            //Move the divs up in their respective columns
                             $(domEle).parent().prepend($(domEle));
-                            //Компенсируем изменения в индексах из-за сдвига вверх
+                            //Conpensate the shift in rows since all other indexes increased by one 
                             rowIndex++;
                         });
-                        gameScore += 1200;
                     }
                 }
-                //Изменение счета
-                $('#score').text('Счет: ' + gameScore);
-                //Если после очистки полных рядов в самом верхнем остался хотя бы 1 элемент, то игра окончена
+                //Changing the visible score
+                $('#score').text('Game score: ' + gameScore);
+                //IF an element with non-white background is in the first row after clearing rows the game is over
                 let topRow = $([]);
                 columns.each((index, domEle) => {
                     if (!$(domEle).children().eq(0).hasClass(backgroundColor)){
@@ -407,30 +401,30 @@ function cycle(){
                 if (topRow.length > 0){
                     isGameover = true;
                 }
-                //После каждого цикла немного ускоряем
+                //Speeding the game up a little
                 if (gameSpeed > 250){
                     gameSpeed -= Math.floor(gameSpeed * 0.03);
                 }
-                //Resolve промиса - цикл окончен            
+                //Resolve that the cycle is finished                
                 resolve();
             }
         );
     });
 }
 
-//Начинает бесконечный цикл игровых циклов
+//Starts the endless loop of cycles
 async function start(){
-    //асинхронно вызываем игровые циклы, чтобы несколько фигур не появлялись одновременно
+    //asynchronous call so multiple figures don't appear at the same time
     while (true){
         await cycle();
         if (isGameover){
             break;
         }
     }
-    //После завершения игры включаем кнопку старта
-    $("#gameover-alert").text("Игра окончена! Ваш счет: " + gameScore);
+    //This part is reached only after the game is over
+    $("#gameover-alert").text("The game is over! Your score: " + gameScore);
     $("#gameover-alert").show();
-    $('#start-button').text('Играть еще раз?').removeClass('disabled').attr('tabindex', '0');
+    $('#start-button').text('Play again?').removeClass('disabled').attr('tabindex', '0');
 }
 
 function reset(){
