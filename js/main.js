@@ -143,8 +143,9 @@ function figure(){
             let chosenTemplate = Math.floor(Math.random() * templates.length);
             //Случайный выбор цвета
             color = Math.floor(Math.random() * colors.length);
-            //Затем красим все элементы в цвет и запоминаем, что они движутся
+            //Создание фигуры
             list = templates[chosenTemplate](startColumn);
+            //Затем красим все элементы в цвет и запоминаем, что они движутся
             list.removeClass(backgroundColor).addClass(colors[color]);
             list.addClass('moving');
             return list;
@@ -192,97 +193,60 @@ function figure(){
                 let interval = setInterval(checkMoving, 100);
             });
         },
+        //Уменьшение задержки падения для текущей фигуры
         decreaseDelay: () => {
             delay = 200;
         },
-        //Сдвинуть фигуру влево на 1 шаг
-        moveLeft: () => {
-            //Коллекция элементов, которые находятся на 1 шаг левее текущих
-            let leftFigure = $([]);
-            
-            let cannotMove = false;
-            //Проверка, можно ли сдвинуть фигуру
-            list.each((index, domEle) => {
-                //ЕСЛИ мы у самого левого края, то нельзя
-                if ($(domEle).parent().prev().length == 0){
-                    cannotMove = true;
-                }
-                //ЕСЛИ есть хотя бы один элемент, блокирующий движение влево, т.е. он не белый
-                if ((!$(domEle).parent().prev().children().eq(
-                        $(domEle).parent().children().index($(domEle)))
-                            .hasClass(backgroundColor))
-                    //И он не в движении
-                    && 
-                    (!$(domEle).parent().prev().children().eq(
-                        $(domEle).parent().children().index($(domEle)))
-                            .hasClass('moving'))){
-                                //ТО нельзя
-                                cannotMove = true;
-                    }
-            });
-            if (cannotMove){
+        //Сдвинуть фигуру влево или вправо на 1 шаг
+        moveSide: (side) => {
+            let newFigure = $([]);
+            //Определение направления сдвига
+            if (side == 'left'){
+                /*  Сдвиг влево: найти индекс в колонне всех элементов, сдвинуться влево на колонну 
+                 *  и найти элементы с таким же индексом, запомнить их */
+                list.each((index, domEle) => {
+                    newFigure = newFigure.add(
+                        $(domEle).parent().prev().children().eq(
+                            $(domEle).parent().children().index($(domEle))
+                        )
+                    );
+                });
+            }
+            else if (side == 'right'){
+                /*  Сдвиг вправо: найти индекс в колонне всех элементов, сдвинуться вправо на колонну 
+                 *  и найти элементы с таким же индексом, запомнить их */
+                list.each((index, domEle) => {
+                    newFigure = newFigure.add(
+                        $(domEle).parent().next().children().eq(
+                            $(domEle).parent().children().index($(domEle))
+                        )
+                    );
+                });
+            }
+            else {
                 return;
             }
-            /*
-                Движение влево: найти индекс в колонне всех элементов, сдвинуться влево на колонну 
-                и найти элементы с таким же индексом, запомнить их
-                TODO: сократить
-            */
-            list.each((index, domEle) => {
-                leftFigure = leftFigure.add(
-                    $(domEle).parent().prev().children().eq(
-                        $(domEle).parent().children().index($(domEle))
-                    )
-                );
-            });
-            //Перекрашивание цветов и замена коллекции новой
-            list.removeClass(colors[color] + ' moving').addClass(backgroundColor);
-            leftFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
-            list = leftFigure;
-        },
-        moveRight: () => {
-            //Коллекция элементов, которые находятся на 1 шаг левее текущих
-            let rightFigure = $([]);
-            
-            let cannotMove = false;
             //Проверка, можно ли сдвинуть фигуру
-            list.each((index, domEle) => {
-                //ЕСЛИ мы у самого левого края, то нельзя
-                if ($(domEle).parent().next().length == 0){
+            let cannotMove = false;
+            //ЕСЛИ мы у самого края, то нельзя
+            if (newFigure.length != 4){
+                cannotMove = true;
+            }
+            //ЕСЛИ есть хотя бы один элемент, блокирующий сдвиг
+            newFigure.each((index, domEle) => {
+                //т.е. он не белый и не в движении
+                if (!$(domEle).hasClass(backgroundColor) && !$(domEle).hasClass('moving')){
+                    //ТО нельзя
                     cannotMove = true;
-                }
-                //ЕСЛИ есть хотя бы один элемент, блокирующий движение влево, т.е. он не белый
-                if ((!$(domEle).parent().next().children().eq(
-                        $(domEle).parent().children().index($(domEle)))
-                            .hasClass(backgroundColor))
-                    //И он не в движении
-                    && 
-                    (!$(domEle).parent().next().children().eq(
-                        $(domEle).parent().children().index($(domEle)))
-                            .hasClass('moving'))){
-                                //ТО нельзя
-                                cannotMove = true;
                 }
             });
             if (cannotMove){
                 return;
             }
-            /*
-                Движение вправо: найти индекс в колонне для каждого элемента, сдвинуться вправо на колонну 
-                и найти элементы с таким же индексом, запомнить их
-                TODO: сократить
-            */
-            list.each((index, domEle) => {
-                rightFigure = rightFigure.add(
-                    $(domEle).parent().next().children().eq(
-                        $(domEle).parent().children().index($(domEle))
-                    )
-                );
-            });
             //Перекрашивание цветов и замена коллекции новой
             list.removeClass(colors[color] + ' moving').addClass(backgroundColor);
-            rightFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
-            list = rightFigure;
+            newFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
+            list = newFigure;
         },
         //Поворот фигуры на 90 градусов против ч.с.
         rotate: () => {
@@ -345,7 +309,7 @@ function cycle(){
     $(document).keydown(function(e) {
         switch(e.key) {
             case 'ArrowLeft': 
-            movingFigure.moveLeft();
+            movingFigure.moveSide('left');
             break;
     
             case 'ArrowUp': // поворот
@@ -353,7 +317,7 @@ function cycle(){
             break;
     
             case 'ArrowRight': 
-            movingFigure.moveRight();
+            movingFigure.moveSide('right');
             break;
     
             case 'ArrowDown': // увеличить скорость падения
