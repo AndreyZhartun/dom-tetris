@@ -5,7 +5,7 @@
 * Проверка столкновений фигур основана на $().hasClass(), предполагается, что каждый div либо белый (пустой), либо закрашенный. Движущиеся div-ы также обозначены классом 'moving'.
 * Движение вбок осуществляется путем нахождения для каждого элемента его соседей сбоку с помощью $().eq( $().index() )
 * Вращение фигуры включает в себя нахождение центра фигуры и вычисление координат элементов относительно центра, затем вычисление новых координат на основе матрицы вращения.
-Примечание: Так как JS синхронный язык, некоторые функции были сделаны асинхронными с помощью Промисов (см. функции autoMove(), cycle() and start()), чтобы фигуры появлялись только одна после другой.
+* Для того, чтобы фигуры появлялись только одна после другой были добавлены Промисы (см. функции autoMove(), cycle() and start()).
 
 ## Tetris realization with DOM elements using Bootstrap and JQuery
 In this version of Tetris the blocks are made of HTML divs and the game physics is emulated by rearranging or repainting divs with JQuery functions. 
@@ -14,4 +14,4 @@ In this version of Tetris the blocks are made of HTML divs and the game physics 
 * Figure collision logic is based on JQuery hasClass(), any grid div has either a background-color class or one of several Bootstrap bg-color classes.
 * Side movement is controlled by the player and uses a keydown event
 * Figure rotation algorithm consists of finding all moving divs' indexes, calculating the most central moving div (the pivot point), then finding all divs' relative coordinates with respect to the central div and using the rotation matrix to calculate the coordinates of rotated divs.
-Note: Since JS is a synchronous language, some asynchrony in the form of Promises was added to prevent multiple figures from appearing simultaneously (see functions autoMove(), cycle() and start()).
+* To prevent multiple figures from appearing simultaneously Promises were added (see functions autoMove(), cycle() and start()).
