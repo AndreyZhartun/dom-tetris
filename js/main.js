@@ -1,7 +1,7 @@
 $(document).ready(() => {
     //Динамическое создание игрового поля, цифры внутри элементов для отладки, их не видно в игре
     for (let index = 1; index <= 12; index++) {
-        $("#game").append(`<div class="col-1 order-`+index+`" id="tetris-column-`+index+`">    
+        $("#game").append(`<div class="col-1 order-` + index + `" id="tetris-column-` + index + `">    
             <div class="col bg-white cell">1</div>
             <div class="col bg-white cell">2</div>
             <div class="col bg-white cell">3</div>
@@ -14,7 +14,7 @@ $(document).ready(() => {
             <div class="col bg-white cell">10</div>
             <div class="col bg-white cell">11</div>
             <div class="col bg-white cell">12</div>
-            </div>`);   
+            </div>`);
     }
 
     //Кнопка для запуска игры после очистки поля и переменных 
@@ -79,7 +79,7 @@ const templates = [
         let column2 = $('#tetris-column-' + (startColumn + 1))
             .children().slice(1, 2);
         let column3 = $('#tetris-column-' + (startColumn + 2))
-            .children().slice(1, 2);  
+            .children().slice(1, 2);
         return column1.add(column2).add(column3);
     },
     //T
@@ -106,71 +106,71 @@ const templates = [
     }
 ];
 
-//Классы цветов и константы игры
-const colors = [
-    'bg-secondary',
-    'bg-dark',
-    'bg-success',
-    'bg-danger',
-    'bg-warning',
-    'bg-info'
-];
-var allColors = '';
-colors.forEach((value, index, array) => {
-    allColors += ' ' + value;
-});
-const backgroundColor = 'bg-white';
-const columnsCount = 12;
-var gameSpeed = 1000;
-var gameScore = 0;
-var isGameover = false;
+var GLOBAL_VARS = {
+    COLORS: [
+        'bg-secondary',
+        'bg-dark',
+        'bg-success',
+        'bg-danger',
+        'bg-warning',
+        'bg-info'
+    ],
+    BACKGROUND_COLOR: 'bg-white',
+    COLUMNS_COUNT: 12,
+    gameSpeed: 1000,
+    gameScore: 0,
+    isGameover: false,
+};
+//var gameSpeed = 1000;
+//var gameScore = 0;
+//var isGameover = false;
 
 //Все, что связано с манипуляцией фигур, здевь в виде замыканий
 //По сути класс, но классы в js это те же функции, так что особого смысла делать классом не видел
-function figure(){
+function figure() {
     //JQuery коллекция DOM элементов, входящих в фигуру  
     let list;
     //Цвет фигуры - нужен для движений в стороны и поворотов, так как там используется перекрашивание
     let color;
     //Скорость падения в мс (задержка для setTimeout, чем меньше, тем быстрее)
-    let delay = gameSpeed;
+    let delay = GLOBAL_VARS.gameSpeed;
     //Замыкания   
     return {
         create: () => {
             //Случайный выбор позиции
-            let startColumn = 2 + Math.floor(Math.random() * (columnsCount - 4));
+            let startColumn = 2 + Math.floor(Math.random() * (GLOBAL_VARS.COLUMNS_COUNT - 4));
             //Случайный выбор шаблона
             let chosenTemplate = Math.floor(Math.random() * templates.length);
             //Случайный выбор цвета
-            color = Math.floor(Math.random() * colors.length);
+            color = Math.floor(Math.random() * GLOBAL_VARS.COLORS.length);
             //Создание фигуры
             list = templates[chosenTemplate](startColumn);
             //Затем красим все элементы в цвет и запоминаем, что они движутся
-            list.removeClass(backgroundColor).addClass(colors[color]);
+            list.removeClass(GLOBAL_VARS.BACKGROUND_COLOR).addClass(GLOBAL_VARS.COLORS[color]);
             list.addClass('moving');
             return list;
         },
         //Авто движение вниз
         autoMove: () => {
             let stopMoving = false;
-            function step(){
+            function step() {
                 //Проверка, необходимо ли остановиться
                 list.each((index, domEle) => {
                     //ЕСЛИ столкнулись с другой фигурой (Следующий div не белый && не в движении)
-                    if ((!$(domEle).next().hasClass(backgroundColor)
+                    if ((!$(domEle).next().hasClass(GLOBAL_VARS.BACKGROUND_COLOR)
                         && !$(domEle).next().hasClass('moving'))
                         //ИЛИ ЕСЛИ достигнули дна поля 
-                        || ($(domEle).next().length == 0)){
-                            stopMoving = true;
+                        || ($(domEle).next().length == 0)) {
+                        stopMoving = true;
                     }
                 });
-                if (stopMoving){
+                if (stopMoving) {
                     list.removeClass('moving');
                     return;
                 }
                 //Меняя местами соседние элементы в одной колонне, мы симулируем падение фигуры
                 list.each((index, domEle) => {
-                    while ($(domEle).next().hasClass('moving')){
+                    while ($(domEle).next().hasClass('moving')) {
                         //Если в колонне несколько элементов, то каждый сначала сдвигается вниз по фигуре
                         $(domEle).before($(domEle).next());
                     }
@@ -183,8 +183,8 @@ function figure(){
             setTimeout(step, delay);
             //Промис - только после успешного полного падения фигуры можно продолжать
             return new Promise(resolve => {
-                function checkMoving(){
-                    if (stopMoving){
+                function checkMoving() {
+                    if (stopMoving) {
                         clearInterval(interval);
                         resolve();
                     }
@@ -201,7 +201,7 @@ function figure(){
         moveSide: (side) => {
             let newFigure = $([]);
             //Определение направления сдвига
-            if (side == 'left'){
+            if (side == 'left') {
                 /*  Сдвиг влево: найти индекс в колонне всех элементов, сдвинуться влево на колонну 
                  *  и найти элементы с таким же индексом, запомнить их */
                 list.each((index, domEle) => {
@@ -212,7 +212,7 @@ function figure(){
                     );
                 });
             }
-            else if (side == 'right'){
+            else if (side == 'right') {
                 /*  Сдвиг вправо: найти индекс в колонне всех элементов, сдвинуться вправо на колонну 
                  *  и найти элементы с таким же индексом, запомнить их */
                 list.each((index, domEle) => {
@@ -229,23 +229,23 @@ function figure(){
             //Проверка, можно ли сдвинуть фигуру
             let cannotMove = false;
             //ЕСЛИ мы у самого края, то нельзя
-            if (newFigure.length != 4){
+            if (newFigure.length != 4) {
                 cannotMove = true;
             }
             //ЕСЛИ есть хотя бы один элемент, блокирующий сдвиг
             newFigure.each((index, domEle) => {
                 //т.е. он не белый и не в движении
-                if (!$(domEle).hasClass(backgroundColor) && !$(domEle).hasClass('moving')){
+                if (!$(domEle).hasClass(GLOBAL_VARS.BACKGROUND_COLOR) && !$(domEle).hasClass('moving')) {
                     //ТО нельзя
                     cannotMove = true;
                 }
             });
-            if (cannotMove){
+            if (cannotMove) {
                 return;
             }
             //Перекрашивание цветов и замена коллекции новой
-            list.removeClass(colors[color] + ' moving').addClass(backgroundColor);
-            newFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
+            list.removeClass(GLOBAL_VARS.COLORS[color] + ' moving').addClass(GLOBAL_VARS.BACKGROUND_COLOR);
+            newFigure.removeClass(GLOBAL_VARS.BACKGROUND_COLOR).addClass(GLOBAL_VARS.COLORS[color] + ' moving');
             list = newFigure;
         },
         //Поворот фигуры на 90 градусов против ч.с.
@@ -260,70 +260,70 @@ function figure(){
             //Находим координаты левого верхнего угла
             let leftCorner = [Math.min(...Object.values(rows)), Math.min(...Object.values(cols))];
             //Чтобы попасть на центр фигуры с левого верхнего угла надо сдвинуться на половину длины
-            let rotationPointOffset = [Math.floor((new Set(Object.values(rows)).size)/2), 
-                                    Math.floor((new Set(Object.values(cols)).size)/2)];
+            let rotationPointOffset = [Math.floor((new Set(Object.values(rows)).size) / 2),
+            Math.floor((new Set(Object.values(cols)).size) / 2)];
             //Находим координаты div-а в самом центре фигуры - он будет точкой поворота
-            let centerCoordinates = [leftCorner[0] + rotationPointOffset[0], 
-                                        leftCorner[1] + rotationPointOffset[1]];
+            let centerCoordinates = [leftCorner[0] + rotationPointOffset[0],
+            leftCorner[1] + rotationPointOffset[1]];
             //Новая коллекция, в которой будем собирать найденные элементы
             let rotatedFigure = $([]);
             /* 
                 Используем матрицу поворота для 90 градусов: надо присвоить х = -у и у = х
             */
             //Для каждого div-а фигуры, так как мы знаем их индексы, то не нужен each
-            for (let i=0; i < 4; i++){
-                let newColumn = '#tetris-column-' + 
-                        (centerCoordinates[1] + rows[i] - centerCoordinates[0] + 1); 
+            for (let i = 0; i < 4; i++) {
+                let newColumn = '#tetris-column-' +
+                    (centerCoordinates[1] + rows[i] - centerCoordinates[0] + 1);
                 let newRow = centerCoordinates[0] - (cols[i] - centerCoordinates[1]);
                 /*  Тут был интересный баг: иногда новый индекс ряда был меньше нуля и 
                 *   считался со дна колонны, так что один из повернутых элементов 
                 *   оказывался 12 ряду, а остальные в 1-3 рядах, и игра прекращалась*/
-                if (newRow < 0){
+                if (newRow < 0) {
                     return;
                 }
                 //Найти повернутый div 
                 let rotatedDiv = $(newColumn).children().eq(newRow);
                 //Проверить, что стена не блокирует поворот (т.е div существует)
-                if (rotatedDiv.length == 0){
+                if (rotatedDiv.length == 0) {
                     return;
                 }
                 //Проверить, что другие фигуры не блокируют поворот
-                if ((!rotatedDiv.hasClass(backgroundColor)) && (!rotatedDiv.hasClass('moving'))){
+                if ((!rotatedDiv.hasClass(GLOBAL_VARS.BACKGROUND_COLOR)) && (!rotatedDiv.hasClass('moving'))) {
                     return;
                 }
                 rotatedFigure = rotatedFigure.add(rotatedDiv);
             }
             //Перекрашивание и замена
-            list.removeClass(colors[color] + ' moving').addClass(backgroundColor);
-            rotatedFigure.removeClass(backgroundColor).addClass(colors[color] + ' moving');
+            list.removeClass(GLOBAL_VARS.COLORS[color] + ' moving').addClass(GLOBAL_VARS.BACKGROUND_COLOR);
+            rotatedFigure.removeClass(GLOBAL_VARS.BACKGROUND_COLOR).addClass(GLOBAL_VARS.COLORS[color] + ' moving');
             list = rotatedFigure;
         }
     };
 }
 
-function cycle(){
+function cycle() {
     //Создание фигуры
     let movingFigure = figure();
     movingFigure.create();
     //Подключение управления с клавиатуры   
-    $(document).keydown(function(e) {
-        switch(e.key) {
-            case 'ArrowLeft': 
-            movingFigure.moveSide('left');
-            break;
-    
+    $(document).keydown(function (e) {
+        switch (e.key) {
+            case 'ArrowLeft':
+                movingFigure.moveSide('left');
+                break;
+
             case 'ArrowUp': // поворот
-            movingFigure.rotate();
-            break;
-    
-            case 'ArrowRight': 
-            movingFigure.moveSide('right');
-            break;
-    
+                movingFigure.rotate();
+                break;
+
+            case 'ArrowRight':
+                movingFigure.moveSide('right');
+                break;
+
             case 'ArrowDown': // увеличить скорость падения
-            movingFigure.decreaseDelay();
-            break;
-    
+                movingFigure.decreaseDelay();
+                break;
+
             default: return;
         }
         e.preventDefault();
@@ -338,42 +338,42 @@ function cycle(){
                 //Проверить заполненные ряды и очистить их: покрасить белым и сдвинуть в самый верх
                 let columns = $('.col-1');
                 //Для этого найти div-ы с одинаковым индексом во всех колоннах
-                for (let rowIndex = columnsCount - 1; rowIndex > 0; rowIndex--){
-                    let checkedRow= $([]);
+                for (let rowIndex = GLOBAL_VARS.COLUMNS_COUNT - 1; rowIndex > 0; rowIndex--) {
+                    let checkedRow = $([]);
                     columns.each((index, domEle) => {
                         //Посчитать количество НЕ белых div-ов
-                        if (!$(domEle).children().eq(rowIndex).hasClass(backgroundColor)){
+                        if (!$(domEle).children().eq(rowIndex).hasClass(GLOBAL_VARS.BACKGROUND_COLOR)) {
                             checkedRow = checkedRow.add($(domEle).children().eq(rowIndex));
                         }
                     });
                     //ЕСЛИ найдено 12 не белых div-ов, то такой ряд полный
-                    if (checkedRow.length == columnsCount){
+                    if (checkedRow.length == GLOBAL_VARS.COLUMNS_COUNT) {
                         checkedRow.each((index, domEle) => {
                             //Убираем все цвета
-                            $(domEle).removeClass(allColors).addClass(backgroundColor);
+                            $(domEle).removeClass(GLOBAL_VARS.COLORS.join(' ')).addClass(GLOBAL_VARS.BACKGROUND_COLOR);
                             //Сдвигаем вверх в колоннах
                             $(domEle).parent().prepend($(domEle));
                             //Компенсируем изменения в индексах из-за сдвига вверх
                             rowIndex++;
                         });
-                        gameScore += 1200;
+                        GLOBAL_VARS.gameScore += 1200;
                     }
                 }
                 //Изменение счета
-                $('#score').text('Счет: ' + gameScore);
+                $('#score').text('Счет: ' + GLOBAL_VARS.gameScore);
                 //Если после очистки полных рядов в самом верхнем остался хотя бы 1 элемент, то игра окончена
                 let topRow = $([]);
                 columns.each((index, domEle) => {
-                    if (!$(domEle).children().eq(0).hasClass(backgroundColor)){
+                    if (!$(domEle).children().eq(0).hasClass(GLOBAL_VARS.BACKGROUND_COLOR)) {
                         topRow = topRow.add($(domEle).children().eq(0));
                     }
                 });
-                if (topRow.length > 0){
-                    isGameover = true;
+                if (topRow.length > 0) {
+                    GLOBAL_VARS.isGameover = true;
                 }
                 //После каждого цикла немного ускоряем
-                if (gameSpeed > 250){
-                    gameSpeed -= Math.floor(gameSpeed * 0.03);
+                if (GLOBAL_VARS.gameSpeed > 250) {
+                    GLOBAL_VARS.gameSpeed -= Math.floor(GLOBAL_VARS.gameSpeed * 0.03);
                 }
                 //Resolve промиса - цикл окончен            
                 resolve();
@@ -383,23 +383,23 @@ function cycle(){
 }
 
 //Начинает бесконечный цикл игровых циклов
-async function start(){
+async function start() {
     //асинхронно вызываем игровые циклы, чтобы несколько фигур не появлялись одновременно
-    while (true){
+    while (true) {
         await cycle();
-        if (isGameover){
+        if (GLOBAL_VARS.isGameover) {
             break;
         }
     }
     //После завершения игры включаем кнопку старта
-    $("#gameover-alert").text("Игра окончена! Ваш счет: " + gameScore);
+    $("#gameover-alert").text("Игра окончена! Ваш счет: " + GLOBAL_VARS.gameScore);
     $("#gameover-alert").show();
     $('#start-button').text('Играть еще раз?').removeClass('disabled').attr('tabindex', '0');
 }
 
-function reset(){
-    gameScore = 0;    
-    gameSpeed = 1000;
-    isGameover = false;
-    $('.cell').removeClass(allColors).addClass(backgroundColor);
+function reset() {
+    GLOBAL_VARS.gameScore = 0;
+    GLOBAL_VARS.gameSpeed = 1000;
+    GLOBAL_VARS.isGameover = false;
+    $('.cell').removeClass(GLOBAL_VARS.COLORS.join(' ')).addClass(GLOBAL_VARS.BACKGROUND_COLOR);
 }
