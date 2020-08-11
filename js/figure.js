@@ -100,12 +100,12 @@ function figure() {
             let stopMoving = false;
             function step() {
                 //Проверка, необходимо ли остановиться
-                list.each((index, domEle) => {
+                list.each((_, domEle) => {
                     //ЕСЛИ столкнулись с другой фигурой (Следующий div не белый && не в движении)
-                    if ((!$(domEle).next().hasClass(GLOBAL_VARS.BACKGROUND_COLOR)
-                        && !$(domEle).next().hasClass('moving'))
+                    if ((!$(domEle).next().hasClass(GLOBAL_VARS.BACKGROUND_COLOR) &&
+                        !$(domEle).next().hasClass('moving')) ||
                         //ИЛИ ЕСЛИ достигнули дна поля 
-                        || ($(domEle).next().length === 0)) {
+                        ($(domEle).next().length === 0)) {
                         stopMoving = true;
                     }
                 });
@@ -114,7 +114,7 @@ function figure() {
                     return;
                 }
                 //Меняя местами соседние элементы в одной колонне, мы симулируем падение фигуры
-                list.each((index, domEle) => {
+                list.each((_, domEle) => {
                     while ($(domEle).next().hasClass('moving')) {
                         //Если в колонне несколько элементов, то каждый сначала сдвигается вниз по фигуре
                         $(domEle).before($(domEle).next());
@@ -149,7 +149,7 @@ function figure() {
             if (side === 'left') {
                 /*  Сдвиг влево: найти индекс в колонне всех элементов, сдвинуться влево на колонну 
                  *  и найти элементы с таким же индексом, запомнить их */
-                list.each((index, domEle) => {
+                list.each((_, domEle) => {
                     newFigure = newFigure.add(
                         $(domEle).parent().prev().children().eq(
                             $(domEle).parent().children().index($(domEle))
@@ -160,7 +160,7 @@ function figure() {
             else if (side === 'right') {
                 /*  Сдвиг вправо: найти индекс в колонне всех элементов, сдвинуться вправо на колонну 
                  *  и найти элементы с таким же индексом, запомнить их */
-                list.each((index, domEle) => {
+                list.each((_, domEle) => {
                     newFigure = newFigure.add(
                         $(domEle).parent().next().children().eq(
                             $(domEle).parent().children().index($(domEle))
@@ -178,7 +178,7 @@ function figure() {
                 cannotMove = true;
             }
             //ЕСЛИ есть хотя бы один элемент, блокирующий сдвиг
-            newFigure.each((index, domEle) => {
+            newFigure.each((_, domEle) => {
                 //т.е. он не белый и не в движении
                 if (!$(domEle).hasClass(GLOBAL_VARS.BACKGROUND_COLOR) && !$(domEle).hasClass('moving')) {
                     //ТО нельзя

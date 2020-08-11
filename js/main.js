@@ -1,7 +1,7 @@
 $(document).ready(() => {
     //Динамическое создание игрового поля, цифры внутри элементов для отладки, их не видно в игре
     for (let index = 1; index <= 12; index++) {
-        $("#game").append(`<div class="col-1 order-` + index + `" id="tetris-column-` + index + `">    
+        $("#game").append(`<div class="col-1" id="tetris-column-` + index + `">    
             <div class="col bg-white cell">1</div>
             <div class="col bg-white cell">2</div>
             <div class="col bg-white cell">3</div>
@@ -71,7 +71,7 @@ function cycle() {
                 //Для этого найти div-ы с одинаковым индексом во всех колоннах
                 for (let rowIndex = GLOBAL_VARS.COLUMNS_COUNT - 1; rowIndex > 0; rowIndex--) {
                     let checkedRow = $([]);
-                    columns.each((index, domEle) => {
+                    columns.each((_, domEle) => {
                         //Посчитать количество НЕ белых div-ов
                         if (!$(domEle).children().eq(rowIndex).hasClass(GLOBAL_VARS.BACKGROUND_COLOR)) {
                             checkedRow = checkedRow.add($(domEle).children().eq(rowIndex));
@@ -79,7 +79,7 @@ function cycle() {
                     });
                     //ЕСЛИ найдено 12 не белых div-ов, то такой ряд полный
                     if (checkedRow.length === GLOBAL_VARS.COLUMNS_COUNT) {
-                        checkedRow.each((index, domEle) => {
+                        checkedRow.each((_, domEle) => {
                             //Убираем все цвета
                             $(domEle).removeClass(GLOBAL_VARS.COLORS.join(' ')).addClass(GLOBAL_VARS.BACKGROUND_COLOR);
                             //Сдвигаем вверх в колоннах
@@ -94,7 +94,7 @@ function cycle() {
                 $('#score').text('Счет: ' + GLOBAL_VARS.gameScore);
                 //Если после очистки полных рядов в самом верхнем остался хотя бы 1 элемент, то игра окончена
                 let topRow = $([]);
-                columns.each((index, domEle) => {
+                columns.each((_, domEle) => {
                     if (!$(domEle).children().eq(0).hasClass(GLOBAL_VARS.BACKGROUND_COLOR)) {
                         topRow = topRow.add($(domEle).children().eq(0));
                     }
