@@ -1,3 +1,4 @@
+@charset "UTF-8";
 .row-header {
   margin: 0px auto;
   padding: 0px 0px; }
@@ -12,15 +13,19 @@
   padding: 20px 0px; }
 
 body {
-  background-color: #F1EED9;
-  color: #46433A;
+  background-color: #f1eed9;
+  color: #46433a;
   z-index: 0; }
 
 .navbar-dark {
-  background-color: #46433A; }
+  background-color: #46433a; }
 
 #game {
   box-shadow: 5px 5px 20px; }
+
+/* после последней колонны была белая полоса в 1px, вот фикс-костыль */
+#game :last-child {
+  margin-right: -1px; }
 
 #start-button {
   margin-right: 5px; }
