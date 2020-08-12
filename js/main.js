@@ -1,22 +1,4 @@
 $(document).ready(() => {
-    //Динамическое создание игрового поля, цифры внутри элементов для отладки, их не видно в игре
-    for (let index = 1; index <= 12; index++) {
-        $("#game").append(`<div class="col-1" id="tetris-column-` + index + `">    
-            <div class="col bg-white cell">1</div>
-            <div class="col bg-white cell">2</div>
-            <div class="col bg-white cell">3</div>
-            <div class="col bg-white cell">4</div>
-            <div class="col bg-white cell">5</div>
-            <div class="col bg-white cell">6</div>
-            <div class="col bg-white cell">7</div>
-            <div class="col bg-white cell">8</div>
-            <div class="col bg-white cell">9</div>
-            <div class="col bg-white cell">10</div>
-            <div class="col bg-white cell">11</div>
-            <div class="col bg-white cell">12</div>
-            </div>`);
-    }
-
     //Кнопка для запуска игры после очистки поля и переменных 
     $("#start-button").on("click", (e) => {
         $("#gameover-alert").hide();
@@ -91,7 +73,7 @@ function cycle() {
                     }
                 }
                 //Изменение счета
-                $('#score').text('Счет: ' + GLOBAL_VARS.gameScore);
+                $('#score').text(`Счет: ${GLOBAL_VARS.gameScore}`);
                 //Если после очистки полных рядов в самом верхнем остался хотя бы 1 элемент, то игра окончена
                 let topRow = $([]);
                 columns.each((_, domEle) => {
@@ -123,7 +105,7 @@ async function start() {
         }
     }
     //После завершения игры включаем кнопку старта
-    $("#gameover-alert").text("Игра окончена! Ваш счет: " + GLOBAL_VARS.gameScore);
+    $("#gameover-alert").text(`Игра окончена! Ваш счет: ${GLOBAL_VARS.gameScore}`);
     $("#gameover-alert").show();
     $('#start-button').text('Играть еще раз?').removeClass('disabled').attr('tabindex', '0');
 }
