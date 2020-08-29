@@ -116,3 +116,9 @@ function reset() {
     GLOBAL_VARS.isGameover = false;
     $('.cell').removeClass(GLOBAL_VARS.COLORS.join(' ')).addClass(GLOBAL_VARS.BACKGROUND_COLOR);
 }
+
+// апгрейд до jquery 3.5.0 ломает collapse бутстрапа
+// тут ручной фикс уязвимости в 3.4.1
+jQuery.htmlPrefilter = function (html) {
+    return html;
+};
