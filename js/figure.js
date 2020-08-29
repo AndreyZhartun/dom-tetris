@@ -4,71 +4,71 @@ function figure() {
     const templates = [
         //O - квадрат
         (startColumn) => {
-            let column1 = $('#tetris-column-' + startColumn)
+            let column1 = $(`.grid>.col-1:nth-child(${startColumn})`)
                 .children().slice(0, 2);
-            let column2 = $('#tetris-column-' + (startColumn + 1))
+            let column2 = $(`.grid>.col-1:nth-child(${startColumn + 1})`)
                 .children().slice(0, 2);
             return column1.add(column2);
         },
         //Z
         (startColumn) => {
-            let column1 = $('#tetris-column-' + startColumn)
+            let column1 = $(`.grid>.col-1:nth-child(${startColumn})`)
                 .children().slice(0, 1);
-            let column2 = $('#tetris-column-' + (startColumn + 1))
+            let column2 = $(`.grid>.col-1:nth-child(${startColumn + 1})`)
                 .children().slice(0, 2);
-            let column3 = $('#tetris-column-' + (startColumn + 2))
+            let column3 = $(`.grid>.col-1:nth-child(${startColumn + 2})`)
                 .children().slice(1, 2);
             return column1.add(column2).add(column3);
         },
         //S
         (startColumn) => {
-            let column1 = $('#tetris-column-' + startColumn)
+            let column1 = $(`.grid>.col-1:nth-child(${startColumn})`)
                 .children().slice(1, 2);
-            let column2 = $('#tetris-column-' + (startColumn + 1))
+            let column2 = $(`.grid>.col-1:nth-child(${startColumn + 1})`)
                 .children().slice(0, 2);
-            let column3 = $('#tetris-column-' + (startColumn + 2))
+            let column3 = $(`.grid>.col-1:nth-child(${startColumn + 2})`)
                 .children().slice(0, 1);
             return column1.add(column2).add(column3);
         },
         //L
         (startColumn) => {
-            let column1 = $('#tetris-column-' + startColumn)
+            let column1 = $(`.grid>.col-1:nth-child(${startColumn})`)
                 .children().slice(0, 2);
-            let column2 = $('#tetris-column-' + (startColumn + 1))
+            let column2 = $(`.grid>.col-1:nth-child(${startColumn + 1})`)
                 .children().slice(0, 1);
-            let column3 = $('#tetris-column-' + (startColumn + 2))
+            let column3 = $(`.grid>.col-1:nth-child(${startColumn + 2})`)
                 .children().slice(0, 1);
             return column1.add(column2).add(column3);
         },
         //J
         (startColumn) => {
-            let column1 = $('#tetris-column-' + startColumn)
+            let column1 = $(`.grid>.col-1:nth-child(${startColumn})`)
                 .children().slice(0, 2);
-            let column2 = $('#tetris-column-' + (startColumn + 1))
+            let column2 = $(`.grid>.col-1:nth-child(${startColumn + 1})`)
                 .children().slice(1, 2);
-            let column3 = $('#tetris-column-' + (startColumn + 2))
+            let column3 = $(`.grid>.col-1:nth-child(${startColumn + 2})`)
                 .children().slice(1, 2);
             return column1.add(column2).add(column3);
         },
         //T
         (startColumn) => {
-            let column1 = $('#tetris-column-' + startColumn)
+            let column1 = $(`.grid>.col-1:nth-child(${startColumn})`)
                 .children().slice(0, 1);
-            let column2 = $('#tetris-column-' + (startColumn + 1))
+            let column2 = $(`.grid>.col-1:nth-child(${startColumn + 1})`)
                 .children().slice(0, 2);
-            let column3 = $('#tetris-column-' + (startColumn + 2))
+            let column3 = $(`.grid>.col-1:nth-child(${startColumn + 2})`)
                 .children().slice(0, 1);
             return column1.add(column2).add(column3);
         },
         //I
         (startColumn) => {
-            let column1 = $('#tetris-column-' + startColumn)
+            let column1 = $(`.grid>.col-1:nth-child(${startColumn})`)
                 .children().slice(0, 1);
-            let column2 = $('#tetris-column-' + (startColumn + 1))
+            let column2 = $(`.grid>.col-1:nth-child(${startColumn + 1})`)
                 .children().slice(0, 1);
-            let column3 = $('#tetris-column-' + (startColumn + 2))
+            let column3 = $(`.grid>.col-1:nth-child(${startColumn + 2})`)
                 .children().slice(0, 1);
-            let column4 = $('#tetris-column-' + (startColumn + 3))
+            let column4 = $(`.grid>.col-1:nth-child(${startColumn + 3})`)
                 .children().slice(0, 1);
             return column1.add(column2).add(column3).add(column4);
         }
@@ -217,8 +217,8 @@ function figure() {
             */
             //Для каждого div-а фигуры, так как мы знаем их индексы, то не нужен each
             for (let i = 0; i < 4; i++) {
-                let newColumn = '#tetris-column-' +
-                    (centerCoordinates[1] + rows[i] - centerCoordinates[0] + 1);
+                let newColumn = '.grid>.col-1:nth-child(' +
+                    (centerCoordinates[1] + rows[i] - centerCoordinates[0] + 1) + ')';
                 let newRow = centerCoordinates[0] - (cols[i] - centerCoordinates[1]);
                 /*  Тут был интересный баг: иногда новый индекс ряда был меньше нуля и 
                 *   считался со дна колонны, так что один из повернутых элементов 
