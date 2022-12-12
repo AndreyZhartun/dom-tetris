@@ -24,7 +24,7 @@
     "bootstrap": "^4.4.1",
     "font-awesome": "^4.7.0",
     "jquery": "3.4.1",
-    "jshint": "^2.12.0",
+    "jshint": "^2.13.6",
     "popper.js": "^1.16.1"
   }
 }
